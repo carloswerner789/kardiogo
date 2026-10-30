@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#0b1d56"/>
+    </linearGradient>
+    <linearGradient id="ht" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff5468"/><stop offset="1" stop-color="#d9123a"/>
+    </linearGradient>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#020a2a" flood-opacity=".45"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="420" cy="80" r="190" fill="#ffffff" opacity=".06"/>
+  <path filter="url(#sh)" fill="url(#ht)" d="M256 420c-7 0-13-3-18-7L120 300c-42-41-48-106-12-150 37-45 104-50 147-11l1 1 1-1c43-39 110-34 147 11 36 44 30 109-12 150L274 413c-5 4-11 7-18 7z"/>
+  <path d="M86 262h92l24-52 38 112 34-96 20 36h86" fill="none" stroke="#ffffff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M388 224l38 38-38 38" fill="none" stroke="#ffffff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

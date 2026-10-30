@@ -1,0 +1,1161 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#1d4ed8"><link rel="manifest" href="manifest.webmanifest"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="KardioGo"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" sizes="180x180" href="icon-180.png"><link rel="icon" type="image/png" sizes="32x32" href="icon-32.png"><link rel="icon" type="image/svg+xml" href="icon.svg"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}</style><title>KardioGo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&display=swap">
+<style>
+/* Layout: Kitteltaschen-Werkzeug. Sticky Kopf mit Suche/Gewicht, Inhalt als ruhige Liste, feste Tab-Leiste unten.
+   Jeder Bereich trägt seine Farbe wie ein Spritzenetikett. */
+:root{
+  --bg:#f3f5fa; --surface:#ffffff; --sunk:#e9edf5; --fg:#0f1830; --muted:#566382; --line:#d6ddea;
+  --accent:#1d4ed8; --on-accent:#ffffff;
+  --c-perf:#d0103a; --c-nacht:#3b3fc4; --c-tel:#1d4ed8; --c-sop:#0e6fa8;
+  --warn:#b42318; --warn-bg:#fdecee; --hi:#fff1cc; --hi-line:#e3b341; --ok:#1d7a3e;
+  --f-body:"Figtree",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-num:"Figtree",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r:12px; --tab-h:62px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0a0f1e; --surface:#111a2e; --sunk:#18223a; --fg:#e7ecf7; --muted:#95a1bd; --line:#26314c;
+  --accent:#7aa5ff; --on-accent:#0a1230;
+  --c-perf:#ff6b81; --c-nacht:#a5a9ff; --c-tel:#7aa5ff; --c-sop:#6fc3f2;
+  --warn:#ff8b80; --warn-bg:#3b1519; --hi:#3a2f10; --hi-line:#b8902a; --ok:#6fd38f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a0f1e; --surface:#111a2e; --sunk:#18223a; --fg:#e7ecf7; --muted:#95a1bd; --line:#26314c;
+  --accent:#7aa5ff; --on-accent:#0a1230;
+  --c-perf:#ff6b81; --c-nacht:#a5a9ff; --c-tel:#7aa5ff; --c-sop:#6fc3f2;
+  --warn:#ff8b80; --warn-bg:#3b1519; --hi:#3a2f10; --hi-line:#b8902a; --ok:#6fd38f; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--fg)}
+body{font:16px/1.45 var(--f-body);margin:0;-webkit-text-size-adjust:100%;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"zero" 0}
+input,button{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"zero" 0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+button,input{font:inherit;color:inherit}
+a{color:var(--accent)}
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* Kopf */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;flex-direction:column;gap:8px;padding-block:10px}
+.bar{display:flex;align-items:center;gap:10px;min-width:0}
+.back{border:0;background:var(--sunk);border-radius:10px;width:40px;height:40px;flex:none;font-size:20px;cursor:pointer}
+.ttl{flex:1;min-width:0}
+.ttl b{display:block;font-size:19px;line-height:1.2;text-wrap:balance;overflow-wrap:anywhere}
+.ttl small{display:block;color:var(--muted);font-size:13px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:1px;background:var(--sec,var(--accent))}
+.kg{display:flex;align-items:center;gap:4px;background:var(--sunk);border-radius:10px;padding:0 8px;height:40px;flex:none}
+.kg input{width:52px;border:0;background:transparent;font-family:var(--f-num);font-size:17px;text-align:right;padding:0}
+.kg input:focus{outline:none}
+.kg span{color:var(--muted);font-size:13px}
+.kg:focus-within{outline:2.5px solid var(--accent)}
+.search{display:flex;align-items:center;gap:8px;background:var(--sunk);border-radius:10px;padding:0 12px;height:44px}
+.search input{flex:1;min-width:0;border:0;background:transparent;font-size:16px;height:100%}
+.search input:focus{outline:none}
+.search:focus-within{outline:2.5px solid var(--accent)}
+.search svg{flex:none;opacity:.6}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin:0 -2px}
+.chips::-webkit-scrollbar{display:none}
+.chips.sub{margin:0}
+.chips.sub .chip{font-size:13.5px;padding:5px 11px}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--sec,var(--accent));border-color:transparent;color:var(--bg);font-weight:700}
+
+main{padding-block:14px calc(var(--tab-h) + 28px + env(safe-area-inset-bottom,0px))}
+main .wrap{display:flex;flex-direction:column;gap:14px}
+
+/* Tab-Leiste */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+nav.tabs .in{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav.tabs a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:var(--tab-h);text-decoration:none;color:var(--muted);font-size:11.5px;font-weight:700;letter-spacing:.02em}
+nav.tabs a svg{width:23px;height:23px}
+nav.tabs a[aria-current="page"]{color:var(--sec)}
+
+/* Startseite */
+.tiles{display:flex;flex-direction:column;gap:10px}
+.tile{display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;column-gap:14px;align-items:center;padding:14px 16px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--fg);position:relative;overflow:hidden}
+.tile::before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:var(--sec)}
+.tile svg{width:30px;height:30px;color:var(--sec);grid-row:1/3}
+.tile::after{content:"›";grid-column:3;grid-row:1/3;color:var(--muted);font-size:22px}
+.tile b{font-size:18px}
+.tile small{color:var(--muted);font-size:13px;line-height:1.3;grid-column:2}
+h2.sec{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:6px 0 -4px;font-weight:700}
+
+/* Listen */
+.list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--line);text-decoration:none;color:var(--fg);min-height:52px}
+.row:first-child{border-top:0}
+a.row:active{background:var(--sunk)}
+.row .main{flex:1;min-width:0}
+.row .main b{font-size:16.5px}
+.row .main .sub{color:var(--muted);font-size:13.5px;overflow-wrap:anywhere}
+.row .rt{flex:none;text-align:right;font-family:var(--f-num);font-size:13.5px;color:var(--sec,var(--accent));white-space:nowrap}
+.row .chev{color:var(--muted);flex:none}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:5px;background:var(--sunk);color:var(--muted);margin-right:6px;vertical-align:1px}
+.empty{padding:22px 14px;color:var(--muted);text-align:center}
+
+/* Perfusor-Detail */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.std{font-family:var(--f-num);font-size:15px;white-space:pre-line}
+.conc{color:var(--muted);font-size:13.5px;margin-top:2px}
+.seg{display:inline-flex;background:var(--sunk);border-radius:10px;padding:3px;gap:3px;margin-top:8px}
+.seg button{border:0;background:transparent;border-radius:8px;padding:6px 10px;font-size:14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.calc{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:8px;margin-top:4px}
+.calc label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted);font-weight:700;letter-spacing:.03em;min-width:0}
+.calc input{width:100%;font-family:var(--f-num);font-size:24px;padding:8px 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);min-width:0}
+.calc input:focus{outline:none;border-color:var(--sec)}
+.calc .eq{padding-bottom:12px;color:var(--muted);font-size:20px}
+.dl{display:grid;grid-template-columns:auto 1fr auto;gap:0;margin-top:2px}
+.dl > div{display:contents}
+.dl dt,.dl dd{padding:9px 0;border-top:1px solid var(--line);margin:0}
+.dl > div:first-child dt,.dl > div:first-child dd{border-top:0}
+.dl dt{color:var(--muted);font-size:13.5px;padding-right:12px;font-weight:700}
+.dl dd.v{font-family:var(--f-num);font-size:15px;white-space:pre-line;overflow-wrap:anywhere}
+.dl dd.r{font-family:var(--f-num);font-size:15px;text-align:right;color:var(--sec);padding-left:10px;white-space:nowrap;font-weight:600}
+.kom{font-size:15.5px}
+.need{font-size:13.5px;color:var(--muted);margin-top:8px}
+.rate{display:flex;flex-direction:column;gap:10px}
+.dlab{font-size:12.5px;font-weight:700;letter-spacing:.03em;color:var(--muted)}
+.dlab span{font-family:var(--f-num);font-weight:500}
+.drow{display:flex;gap:8px;align-items:stretch}
+.drow input{flex:1;min-width:0;font-family:var(--f-num);font-size:26px;padding:8px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg)}
+.drow input:focus{outline:none;border-color:var(--sec)}
+.stepb{flex:none;width:52px;border-radius:10px;border:1.5px solid var(--line);background:var(--sunk);font-size:26px;cursor:pointer}
+.stepb:active{background:var(--line)}
+.qchips{display:flex;flex-wrap:wrap;gap:6px}
+.qchips button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 9px;font-family:var(--f-num);font-size:14px;cursor:pointer}
+.qchips button small{font-family:var(--f-body);color:var(--muted);font-size:12px}
+.qchips button[aria-pressed="true"]{border-color:var(--sec);box-shadow:inset 0 0 0 1px var(--sec)}
+.big{display:flex;align-items:baseline;gap:8px;padding:12px 14px;border-radius:12px;background:var(--sunk);min-height:76px}
+.big .v{font-family:var(--f-num);font-size:46px;font-weight:600;line-height:1;color:var(--sec);font-variant-numeric:tabular-nums}
+.big .mlh{font-size:20px;font-weight:700;color:var(--sec)}
+.big .mute{color:var(--muted);font-size:17px;align-self:center}
+.kg.ask{outline:2.5px solid var(--warn)}
+.crow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.crow input{flex:1 1 90px;min-width:0;font-family:var(--f-num);font-size:22px;padding:8px 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg)}
+.crow select{flex:0 0 auto;font:inherit;font-size:16px;padding:10px 8px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg)}
+.crow input:focus,.crow select:focus{outline:none;border-color:var(--sec)}
+.crow .in{color:var(--muted);font-size:14px}
+.calcchip{text-decoration:none;color:var(--sec);border-color:var(--sec);font-weight:700}
+.rev summary{cursor:pointer;color:var(--muted);font-size:14px}
+.revrow{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.revrow input{width:110px;font-family:var(--f-num);font-size:18px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--bg)}
+.revrow b{font-family:var(--f-num);color:var(--sec)}
+.srcnote{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.kom13{margin-top:10px;font-size:15px}
+.info{margin-top:8px;font-size:13px;line-height:1.4;color:var(--muted)}
+.info .tag{font-size:10px;padding:1px 5px;margin-right:6px}
+.big .bd{margin-left:auto;font-family:var(--f-num);font-size:14px;color:var(--muted)}
+.refs{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.ref{display:grid;grid-template-columns:78px 1fr auto;gap:8px;align-items:baseline;padding:8px 0;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left;font:inherit;color:inherit;width:100%}
+button.ref{cursor:pointer}
+button.ref[aria-pressed="true"] .rl{color:var(--sec)}
+.ref .rl{font-size:12.5px;font-weight:700;color:var(--muted)}
+.ref .rt2{font-family:var(--f-num);font-size:12.5px;color:var(--muted);white-space:pre-line;overflow-wrap:anywhere;min-width:0}
+.ref:not(:has(.ml)) .rt2{font-size:15px;color:var(--fg)}
+.ref .ml{font-family:var(--f-num);font-size:18px;color:var(--sec);white-space:nowrap;text-align:right}
+.ref .ml small{font-size:12px}
+.ref .ml.mute{color:var(--muted);font-size:14px}
+.lad{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px}
+.lad button{display:flex;flex-direction:column;align-items:center;gap:1px;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:6px 4px;cursor:pointer}
+.lad button b{font-family:var(--f-num);font-size:16px;color:var(--sec)}
+.lad button small{font-family:var(--f-num);font-size:11.5px;color:var(--muted)}
+.lad button[aria-pressed="true"]{border-color:var(--sec);box-shadow:inset 0 0 0 1px var(--sec)}
+.lad .dots{align-self:center;text-align:center;color:var(--muted)}
+.warnbox{margin-top:0}
+.formula{margin-top:0;font-family:var(--f-num);font-size:13.5px;color:var(--muted);overflow-wrap:anywhere}
+.formula b{color:var(--sec)}
+.ph.pg{border-color:var(--c-tel)}
+.ph .pgl{font-family:var(--f-body);font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--c-tel)}
+mark.w{background:transparent;color:var(--warn);font-weight:700}
+.warnbox{background:var(--warn-bg);color:var(--fg);border-radius:10px;padding:10px 12px;font-size:15px}
+.warnbox b{color:var(--warn)}
+
+/* Textinhalte (Nachtdienst/SOP) */
+.doc{display:flex;flex-direction:column;gap:10px}
+.doc h3{font-size:15px;margin:6px 0 -4px;color:var(--sec)}
+.doc h3.w{color:var(--warn)}
+.doc ul,.doc ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.doc li{padding-left:2px}
+.doc li::marker{color:var(--sec)}
+.doc ul ul{margin-top:6px;gap:4px;list-style:circle}
+.doc p{margin:0}
+.ddl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px}
+.ddl dt{font-weight:700}
+.ddl dd{margin:0}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;font-size:15px;min-width:240px}
+.tbl th,.tbl td{text-align:left;padding:7px 14px 7px 0;border-bottom:1px solid var(--line);white-space:pre-line;vertical-align:top}
+.tbl th{font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.ttabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.ttabs::-webkit-scrollbar{display:none}
+.ttabs button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 13px;font-size:14.5px;cursor:pointer;white-space:nowrap}
+.ttabs button[aria-pressed="true"]{background:var(--sec);color:var(--bg);border-color:transparent;font-weight:700}
+.ttabs button.w:not([aria-pressed="true"]){color:var(--warn);border-color:var(--warn)}
+.xref{display:inline-flex;align-items:center;gap:6px;font-size:14px;text-decoration:none;color:var(--sec);border:1px dashed var(--sec);border-radius:8px;padding:6px 10px;align-self:flex-start}
+
+/* Werkzeuge */
+.tool{background:var(--sunk);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.tool .in{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.tool label{display:flex;flex-direction:column;gap:3px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.tool input{width:96px;font-family:var(--f-num);font-size:20px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface)}
+.tool input:focus{outline:none;border-color:var(--sec)}
+.tool .res{font-family:var(--f-num);font-size:20px;font-weight:600;color:var(--sec)}
+.tool .res small{font-family:var(--f-body);font-size:13px;color:var(--muted);font-weight:400}
+.steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.steps li{display:flex;gap:10px;padding:8px 10px;border-radius:9px;background:var(--surface);border:1px solid var(--line)}
+.steps li .n{flex:none;font-family:var(--f-num);font-weight:600;width:20px;color:var(--muted)}
+.steps li.on{background:var(--hi);border-color:var(--hi-line)}
+.steps li.on .n{color:var(--fg)}
+
+/* Telefon */
+.ph{display:inline-flex;align-items:center;gap:4px;font-family:var(--f-num);font-weight:600;font-size:15px;border:1px solid var(--line);background:var(--sunk);color:var(--fg);border-radius:8px;padding:4px 8px;cursor:pointer;white-space:nowrap;vertical-align:baseline;line-height:1.25}
+.ph small{font-family:var(--f-body);font-weight:400;font-size:11.5px;color:var(--muted)}
+.ph:active{background:var(--line)}
+.doc .ph{font-size:14px;padding:1px 6px}
+.trow{display:flex;gap:10px;padding:10px 14px;border-top:1px solid var(--line);align-items:flex-start}
+.trow:first-child{border-top:0}
+.trow .main{flex:1;min-width:0}
+.trow .main b{font-weight:700;overflow-wrap:anywhere}
+.trow .note{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.trow .nums{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.star{border:0;background:transparent;font-size:20px;line-height:1;cursor:pointer;color:var(--line);padding:2px;flex:none}
+.star[aria-pressed="true"]{color:var(--hi-line)}
+.dhead{padding:8px 14px;background:var(--sunk);font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.callx{font-size:12px;margin-left:2px}
+
+.pdf{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:6px 10px;align-self:flex-start;background:var(--surface)}
+.stand{color:var(--muted);font-size:13px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab-h) + 16px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:9px 14px;border-radius:10px;font-size:14.5px;z-index:40;opacity:0;transition:opacity .15s;pointer-events:none}
+.toast.on{opacity:1}
+.hint{color:var(--muted);font-size:13px;text-align:center}
+.logo{width:40px;height:40px;border-radius:10px;flex:none}
+.themebtn{border:0;background:var(--sunk);border-radius:10px;width:40px;height:40px;flex:none;cursor:pointer}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+</style>
+
+</head><body><noscript><div class="wrap" style="padding-block:24px">Diese App braucht JavaScript. Auf iPhone/iPad die Datei nicht in der Schnellansicht öffnen, sondern über die Web-Adresse in Safari.</div></noscript>
+<header class="top" id="top"></header>
+<main id="main"><div class="wrap" id="view"></div></main>
+<nav class="tabs" aria-label="Bereiche"><div class="in" id="tabs"></div></nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// Perfusorstandard Intensivstation 13H3 (Version 2.0, 09.09.2019) – Text wörtlich aus der Quelle.
+// calc: c = Konzentration (Einheit der Dosis pro ml), w = gewichtsbezogen, m = 60 bei "/min"
+// s = Startdosis [von,bis], st = Steigerungsschritt, mx = Max-Dosis, lv = zusätzliche Dosisstufen aus der Quelle
+// g = App-Filter (Navigationshilfe, nicht Teil der Quelle)
+const PERF = {
+  meta: { title: "Perfusorstandard 13H3", version: "Version 2.0 · 09.09.2019", pdf: "pdfs/perfusorstandard-13h3.pdf" },
+  groups: [
+    ["kreis", "Kreislauf"], ["rr", "RR / Vasodilat."], ["rhy", "Rhythmus"], ["sed", "Sedierung / Analgesie"],
+    ["ger", "Gerinnung / Blutung"], ["el", "Elektrolyte / Stoffw."], ["sonst", "Sonstige"]
+  ],
+  drugs: [
+    { id: "adrenalin", n: "Adrenalin", sub: "Suprarenin", g: ["kreis"], std: "meist 10 mg/50ml NaCl 0,9% (Standard)", u: "μg/kg/min", start: "~0,08-0,1", step: "", max: "offen", k: "ungefähre Richtwerte: geringe Dosis: <0,2, mittlere D.: 0,5, hohe D: >0,8", calc: { c: 200, cu: "µg/ml", w: 1, m: 60, s: [0.08, 0.1], lv: [["gering", 0.2], ["mittel", 0.5], ["hoch", 0.8]] } },
+    { id: "actilyse", n: "Actilyse", sub: "Alteplase, rtPA", g: ["ger"], std: "50 mg/ml Aqua dest", u: "", dose: "Pulmonalembolie (>65 kg):10 mg als Bolus über 1-2 min, 90 mg über 2 Stunden (insgesamt 100 mg)", k: "IND: katecholaminpfl. PE mit eingeschränkt. RVF" },
+    { id: "argatra", n: "Argatra", sub: "Argatroban", g: ["ger"], std: "50mg/50ml NaCl 0,9%", u: "μg/kg/min", start: "0,2", step: "0,2 (- 0,1)", max: "", k: "nach APTT, CAVE: Dosis geringer als im Beipack!!!, Elimination Leber", calc: { c: 1000, cu: "µg/ml", w: 1, m: 60, s: [0.2], st: 0.2 } },
+    { id: "arterenol", n: "Arterenol", sub: "Noradrenalin", g: ["kreis"], std: "meist 10 mg/50ml NaCl 0,9% (Standard)", u: "μg/kg/min", start: "~0,08-0,1", step: "", max: "offen", k: "ungefähre Richtwerte: geringe Dosis: <0,2, mittlere D.: 0,5, hohe D: >0,8", calc: { c: 200, cu: "µg/ml", w: 1, m: 60, s: [0.08, 0.1], lv: [["gering", 0.2], ["mittel", 0.5], ["hoch", 0.8]] } },
+    { id: "beriplex", n: "Beriplex", sub: "II, VII, IX, X, Pro C + S", g: ["ger"], std: "pur im Perfusor", u: "", dose: "~ 1500-2000 IE über ca 20 min", k: "Packung zu 500IE.  Bei Blutung und \"schlechtem\" NT. Anmerkung: verlängerte PTT normalisiert sich nicht" },
+    { id: "brevibloc", n: "Brevibloc", sub: "Esmolol", g: ["rhy"], std: "2500 mg/50ml NaCl 0,9%", u: "mg/h", start: "200", step: "200 (alle 10 min)", max: "offen", k: "hohe Dosen sind 800-1200, HWZ 9 min", calc: { c: 50, cu: "mg/ml", m: 1, s: [200], st: 200, lv: [["hoch", 800], ["hoch", 1200]] } },
+    { id: "bricanyl", n: "Bricanyl", sub: "Terbutalinsulfat", g: ["sonst"], std: "6 Ampullen/50 ml NaCl", u: "", start: "2 ml/h", step: "", max: "", k: "alternativ: 3-6 x 1/2-1 Amp s.c./Tag" },
+    { id: "brietal", n: "Brietal", sub: "Methohexital", g: ["sed"], std: "500 mg/50ml NaCl 0,9%", u: "mg/h", start: "50", step: "", max: "200", k: "möglichst vermeiden. Nur bei Epi-Anfall", calc: { c: 10, cu: "mg/ml", m: 1, s: [50], mx: 200 } },
+    { id: "catapresan", n: "Catapresan", sub: "Clonidin", g: ["sed", "rr"], std: "1,5 mg/50ml NaCl 0,9%", u: "μg/h", start: "30", step: "30", max: "120", k: "sedieren u RR-senkend, CAVE: Bradykadie, Rhabdomyolyse, malignes Neuroleptikasyndrom", calc: { c: 30, cu: "µg/ml", m: 1, s: [30], st: 30, mx: 120 } },
+    { id: "cormagnesin", n: "Cormagnesin", sub: "", g: ["el", "rhy"], std: "# /50ml NaCl 0,9%", u: "mg", dose: "Mg-Substit: 200 mg (8 mval) - 400 mg (16 mval) langsam über 3 h", k: "grosse therapeutische Breite. Torsaden: 2g über 20-60 min (2g im Bolus nur bei KL-Stillstand), ICU Delir: bis zu 2g" },
+    { id: "corotrop", n: "Corotrop", sub: "Milrinon", g: ["kreis"], std: "20 mg/50ml NaCl 0,9%", u: "μg/kg/min", start: "0,25", step: "", max: "0,75", k: "auf 13H3 ohne Bolus, IND: Low Output, Herzinsuff.", calc: { c: 400, cu: "µg/ml", w: 1, m: 60, s: [0.25], mx: 0.75 } },
+    { id: "dexdor", n: "Dexdor", sub: "Dexmedetomidin", g: ["sed"], std: "1000µg/50Nacl", u: "μg/kg/h", start: "ca. 0,7", step: "", max: "1,4", k: "CAVE: HF-und RR-Abfall, KI: Bradykardie, höhergrad. AV Block", calc: { c: 20, cu: "µg/ml", w: 1, m: 1, s: [0.7], mx: 1.4 } },
+    { id: "dilzem", n: "Dilzem", sub: "Diltiazem", g: ["rhy"], std: "100 mg/50ml NaCl 0,9%", u: "mg/h", start: "10", step: "5 bis 10", max: "40", k: "dzt nicht erhältlich", calc: { c: 2, cu: "mg/ml", m: 1, s: [10], mx: 40 } },
+    { id: "dobutrex", n: "Dobutrex", sub: "Dobutamin", g: ["kreis"], std: "250 mg/50ml pur\n500 mg/50ml pur", u: "μg/kg/min", start: "3", step: "3>5>8", max: "offen", k: "möglichst wenig, höhere Dosen: erhöhte Mortalität. geringe Dosis (1-3µg/kg/min) kombiniert mit Levosimendan sinnvoll.", calc: { co: [["250 mg/50ml", 5000], ["500 mg/50ml", 10000]], cu: "µg/ml", w: 1, m: 60, s: [3], lv: [["Stufe", 5], ["Stufe", 8]] } },
+    { id: "dopamin", n: "Dopamin", sub: "Dopamin", g: ["kreis"], std: "250 mg/50ml pur", u: "μg/kg/min", start: "3", step: "3", max: "\"Nierendosis\" individuell bei ca. 3; Vasokonstr ab > 5", k: "nur bei fehlendem ZVK zur HD Stabilisierung. Im kardiogenen Schock signifikant höhere Mortalität", calc: { c: 5000, cu: "µg/ml", w: 1, m: 60, s: [3], st: 3 } },
+    { id: "dormicum", n: "Dormicum", sub: "Midazolam", g: ["sed"], std: "250 mg/50ml pur", u: "μg/kg/h", start: "100", step: "", max: "offen", k: "so wenig wie möglich, CAVE: Kumulation, geringe D: 25-50, hohe D: >300 (Antitod: Anexate (Flumazenil))", calc: { c: 5000, cu: "µg/ml", w: 1, m: 1, s: [100] } },
+    { id: "ebrantil", n: "Ebrantil", sub: "Urapidil", g: ["rr"], std: "250 mg/50ml pur", u: "mg/h", start: "10", step: "", max: "50", k: "mit oder ohne Bolus 12,5 - 25 mg, Perf > 50mg/h kein zusätzlicher Effekt", calc: { c: 5, cu: "mg/ml", m: 1, s: [10], mx: 50 } },
+    { id: "esmeron", n: "Esmeron", sub: "Rocuroniumbromid", g: ["sed"], std: "500mg/50ml", u: "mg/h", start: "30-50", step: "keine Steigerung", max: "", k: "1) bei Cooling. 2) bei sonst nicht beherrschbaren maschinellen Beatmungsproblemen, Antitod (", calc: { c: 10, cu: "mg/ml", m: 1, s: [30, 50] } },
+    { id: "fentanyl", n: "Fentanyl", sub: "", g: ["sed"], std: "2,5 mg/50ml pur", u: "μg/kg/h", start: "1", step: "", max: "4", k: "möglichst wenig, tägliche Beurteilung der minimal nötigen Dosis, SAS III-IV, wake up call!", calc: { c: 50, cu: "µg/ml", w: 1, m: 1, s: [1], mx: 4 } },
+    { id: "flolan", n: "Flolan", sub: "Epoprostenol", g: ["rr"], std: "0,25 mg/50ml Lösungsmittel", u: "ng/kg/min", start: "für HF: 3\nbei PH: 3", step: "2,5-3", max: "5\nca. 10 (15), individuell", k: "bei HF, PH", calc: { c: 5000, cu: "ng/ml", w: 1, m: 60, s: [3] } },
+    { id: "gilurytmal", n: "Gilurytmal", sub: "Ajmalin", g: ["rhy"], std: "250 mg (5 Amp)/50ml pur", u: "mg/h", start: "10", step: "", max: "", k: "CAVE: max 3-5 Amp/Tag!!!, QRS-Breite, Asystolie!", calc: { c: 5, cu: "mg/ml", m: 1, s: [10] } },
+    { id: "g1p", n: "Glucose-1-Phosphat", sub: "", g: ["el"], std: "5 Amp zu 10 mmol in 50 ml (pur)", u: "", dose: "15 mmol/h = 15 ml/h", k: "alternat.: Natrium-Glyceryl-Phosphat (selbe Dosis)" },
+    { id: "haldolb", n: "Haldol- Bolus", sub: "Haloperidol", g: ["sed"], std: "25 mg/50ml Gluc 5%", u: "mg", dose: "Bolus 5-10 mg in KI", k: "bei ICU Delir, wirkt nicht sofort (mit Benzodiazepin kombinieren!)" },
+    { id: "haldolp", n: "Haldol- Perfusor", sub: "Haloperidol", g: ["sed"], std: "25 mg/50ml Gluc 5%", u: "mg/h", start: "0,5-1", step: "", max: "bis 10mg/h", k: "CAVE: EPS, Spätdyskinesie. Bis 48mg(!)/h wurden beschrieben. Nicht nachmachen", calc: { c: 0.5, cu: "mg/ml", m: 1, s: [0.5, 1], mx: 10 } },
+    { id: "hepamerz", n: "Hepamerz", sub: "", g: ["el"], std: "5 Amp zu 5g PUR (=50ml)", u: "g/h", start: "1", step: "", max: "", k: "12-24g/die, Cave Erbrechen, IND: hepat. Koma", calc: { c: 0.5, cu: "g/ml", m: 1, s: [1] } },
+    { id: "heparin", n: "Heparin", sub: "", g: ["ger"], std: "10000 IE/50ml NaCl 0,9%", u: "IE/h", dose: "als Prophylaxe: 300-400. Steigerung  in 200IE-Schritten, therapeut Dosis: nach APTT 60-80. Bei LAK nach TZ", k: "", calc: { c: 200, cu: "IE/ml", m: 1, s: [300, 400], sl: "Prophylaxe", st: 200 } },
+    { id: "hydrocortone", n: "Hydrocortone", sub: "Hydrocortison", g: ["sonst"], std: "100 mg/50ml NacCl 0,9%", u: "mg/h", dose: "8,4  für 5 d, 4,2 für 3d, 2,1 für 2d, dann ex", k: "bei hohen Nor-Dosen (z.B.: >0.5µg/kg/min), CAVE: Lichtschutz!!!", calc: { c: 2, cu: "mg/ml", m: 1, lv: [["5 d", 8.4], ["3 d", 4.2], ["2 d", 2.1]] } },
+    { id: "haemocomplettan", n: "Haemocomplettan", sub: "Fibrinogen", g: ["ger"], std: "", u: "", dose: "~ 2g", k: "bei Blutung und Fgenspiegel <200mg/dl" },
+    { id: "insulin", n: "Insulin", sub: "Actrapid", g: ["el"], std: "50 IE/50ml NaCl 0,9%", u: "IE/h", start: "0,5-1", step: "0,5-1(oder mehr)", max: "offen", k: "je nach BZ titrieren, BZ-Ziel<150", calc: { c: 1, cu: "IE/ml", m: 1, s: [0.5, 1] } },
+    { id: "isoptin", n: "Isoptin", sub: "Verapamil", g: ["rr", "rhy"], std: "50 mg/50ml NaCl 0,9%", u: "mg/h", dose: "0,05-0,1 ng/kg/h bei Hypertensiver Krise (Tagesdosis bis 1,5 ng/kg)", k: "HWZ: 4-7h, für AFIB keine klare Dosisempfehlung" },
+    { id: "isuprel", n: "Isuprel", sub: "Isoprenalin", g: ["kreis", "rhy"], std: "1 mg/50ml NaCl 0,9%", u: "μg/kg/min", start: "0,01", step: "", max: "0,03", k: "reiner ß-Stimulator, IND: post HTX, AV Block, SSS", calc: { c: 20, cu: "µg/ml", w: 1, m: 60, s: [0.01], mx: 0.03 } },
+    { id: "kcl", n: "Kalium Chlorid", sub: "", g: ["el"], std: "pur # (nur über ZVK)", u: "mmol", dose: "40-50 langsam über ca. 3 h = 15 mmol (ml)/h", k: "" },
+    { id: "kmalat", n: "Kalium Malat", sub: "", g: ["el"], std: "pur # (nur über ZVK)", u: "mmol", dose: "40-50 langsam über ca. 3h = 15 mmol (ml) /h", k: "" },
+    { id: "ketanest", n: "Ketanest S", sub: "Esketamin", g: ["sed"], std: "1250 mg/50ml pur", u: "mg/kg/h", start: "1", step: "", max: "3", k: "linksdrehende Form, CAVE: nicht als MonoTherapie", calc: { c: 25, cu: "mg/ml", w: 1, m: 1, s: [1], mx: 3 } },
+    { id: "lasix", n: "Lasix", sub: "", g: ["sonst"], std: "500 mg/50ml pur", u: "mg/h", start: "10", step: "", max: "40", k: "", calc: { c: 10, cu: "mg/ml", m: 1, s: [10], mx: 40 } },
+    { id: "lidocorit", n: "Lidocorit = Xylocain", sub: "Lidocain", g: ["rhy"], std: "1000 mg/50ml NaCl 0,9%", u: "mg/h", start: "50", step: "", max: "100 (im außesten Notfall bis 240)", k: "Additiv aus Verzweiflung bei elektrischem Sturm. Daten ? Cave: nicht gleiche Antiarrhythmika-Klassen kombinieren!!!, IND auch bei Tubustoleranz, Bolus möglich (50-100 mg über 10 min)", calc: { c: 20, cu: "mg/ml", m: 1, s: [50], mx: 100, lv: [["Notfall", 240]] } },
+    { id: "minirin", n: "Minirin", sub: "Desmopressin", g: ["ger"], std: "20 μg /50 ml Nacl 0,9%", u: "μg/h", dose: "4 μg/h über 5h", k: "bei Blutungen zur Hebung des F VIII", calc: { c: 0.4, cu: "µg/ml", m: 1, s: [4] } },
+    { id: "minprog", n: "Minprog", sub: "Alprostapint", g: ["rr"], std: "1 mg/50ml NaCl 0,9%", u: "ng/kg/min", start: "2,5", step: "", max: "offen, ca 10", k: "IND: PH, CHF", calc: { c: 20000, cu: "ng/ml", w: 1, m: 60, s: [2.5], lv: [["ca.", 10]] } },
+    { id: "nipruss", n: "Nipruss", sub: "Nitroprussidnatrium", g: ["rr"], std: "60 mg/50ml Gluc 5%", u: "μg/kg/min", start: "0,5", step: "ca. 0,1", max: "8", k: "HWZ ~30 sec, titrieren nach RR bei rasch wechselndem RR (z.B.postop), bei intraktabel hohem RR. Cave MetHb Ko. Cave Cyanidbildung. Kurzzeitanwendung (<72h), Lichtschutz!!!", calc: { c: 1200, cu: "µg/ml", w: 1, m: 60, s: [0.5], st: 0.1, mx: 8 } },
+    { id: "novoseven", n: "Novoseven", sub: "Eptacog alfa aktiv.", g: ["ger"], std: "1 mg bis 5 mg", u: "", dose: "1 mg=1000ug=50000IE, Dosis initial: 90ug/kg, wiederholte Gabe (nach Klinik (siehe Beipack), im Bolus über 2-5 min", k: "", bolus: { perKg: 90, u: "µg" } },
+    { id: "pantoloc", n: "Pantoloc", sub: "Pantoprazol", g: ["sonst"], std: "200 mg/50 ml Nacl 0,9%", u: "mg/h", start: "2 mg/h", step: "", max: "", k: "", calc: { c: 4, cu: "mg/ml", m: 1, s: [2] } },
+    { id: "perlinganit", n: "Perlinganit", sub: "Nitropohl", g: ["rr"], std: "50 mg/50ml pur", u: "mg/h", start: "1", step: "", max: "4", k: "", calc: { c: 1, cu: "mg/ml", m: 1, s: [1], mx: 4 } },
+    { id: "prograf", n: "Prograf", sub: "Tacrolimus", g: ["sonst"], std: "1 mg/50ml NaCl 0,9%", u: "mg/h", start: "~0,025", step: "", max: "", k: "Nach Vorschreibung TX Team. Plausibilitätsprüfung: Startdosis ca 0,6-mg/24h. Ca. halbe orale Dosis, Steuerung: FK 506 (Prograf)-Spiegel (ca 5-15, je nach Abstand zur TX und Organ)", calc: { c: 0.02, cu: "mg/ml", m: 1, s: [0.025] } },
+    { id: "propofol", n: "Propofol", sub: "Propofol", g: ["sed"], std: "1000 mg/50ml pur", u: "mg/kg/h", start: "1", step: "", max: "4", k: "CAVE: Rhabdomyolyse mit Laktazidose (v.a. bei Kindern), Hypertriglyceridämie. möglichst wenig, tägliche Beurteilung der minimal nötigen Dosis, SAS III-IV, wake up call!", calc: { c: 20, cu: "mg/ml", w: 1, m: 1, s: [1], mx: 4 } },
+    { id: "rapibloc", n: "Rapibloc", sub: "Landiolol", g: ["rhy"], std: "300 mg/50ml", u: "μg/kg/min", start: "2,5", step: "2,5", max: "20", k: "kurzwirksamer iv B-Blocker (HWZ 4 min), nur geringer Effekt auf RR, schrittweise Erhöhung alle 10 min", calc: { c: 6000, cu: "µg/ml", w: 1, m: 60, s: [2.5], st: 2.5, mx: 20 } },
+    { id: "prothromplex", n: "Prothromplex", sub: "F II, IX, X", g: ["ger"], std: "pur im Perfusor", u: "", dose: "~1200-2400 IE", k: "in 600IE Packungen. Bei Blutung und \"schlechtem\" NT. Anmerkung: verlängerte PTT normalisiert sich nicht" },
+    { id: "sandimmun", n: "Sandimmun", sub: "Ciclosporin", g: ["sonst"], std: "50 mg/50ml Gluc 5%", u: "mg/h", dose: "nach Spiegel: Beginn 50 mg/d = ca 2 mg/h", k: "", calc: { c: 1, cu: "mg/ml", m: 1, s: [2] } },
+    { id: "sedacoron", n: "Sedacoron", sub: "Amiodaron", g: ["rhy"], std: "750 mg/50ml NaCl 0,9%", u: "mg/h", start: "45", step: "", max: "", k: "AFIB: ca 3g aufsättigen, VT: 10-15 g", calc: { c: 15, cu: "mg/ml", m: 1, s: [45] } },
+    { id: "simdax", n: "Simdax", sub: "Levosimendan", g: ["kreis"], std: "12,5 mg/50 ml Gluc. 5%", u: "μg/kg/min", start: "0,1", step: "", max: "0,2", k: "auf Intensiv OHNE Bolus. Dosisrange Dauerinfusion 0,05-0,2µg/kg/min", calc: { c: 250, cu: "µg/ml", w: 1, m: 60, s: [0.1], mx: 0.2, lv: [["min.", 0.05]] } },
+    { id: "somatostatin", n: "Somatostatin", sub: "", g: ["sonst"], std: "6 mg/50ml NaCl 0,9%", u: "mg/h", dose: "0,36 mg/h = 3 ml/h", k: "in der Regel 3 Tage" },
+    { id: "suprablitz", n: "Suprablitz", sub: "Adrenalin", g: ["kreis"], std: "1 mg Supra auf 100 ml Nacl", u: "", dose: "Titrieren in 1 ml (0,01 mg)-Schritten", k: "" },
+    { id: "suprarenin", n: "Suprarenin", sub: "Adrenalin", g: ["kreis"], std: "meist 10 mg/50ml NaCl 0,9% (Standard)", u: "μg/kg/min", start: "~0,08-0,1", step: "", max: "offen", k: "ungefähre Richtwerte: geringe Dosis: <0,2, mittlere D.: 0,5, hohe D: >0,8", calc: { c: 200, cu: "µg/ml", w: 1, m: 60, s: [0.08, 0.1], lv: [["gering", 0.2], ["mittel", 0.5], ["hoch", 0.8]] } },
+    { id: "theospirex", n: "Theospirex", sub: "Theophyllin", g: ["sonst"], std: "1000 mg/50ml pur", u: "mg/h", start: "20", step: "", max: "50", k: "", calc: { c: 20, cu: "mg/ml", m: 1, s: [20], mx: 50 } },
+    { id: "thiopental", n: "Thiopental", sub: "Thiopental", g: ["sed"], std: "1000mg/50 Aqua", u: "mg/kg/h", start: "~ 2", step: "", max: "5", k: "", calc: { c: 20, cu: "mg/ml", w: 1, m: 1, s: [2], mx: 5 } },
+    { id: "ultiva", n: "Ultiva", sub: "Remifentanil", g: ["sed"], std: "5 oder 10 mg/50 Nacl", u: "μg/kg/min", start: "0,05", step: "", max: "0,2", k: "CAVE: im Unterschied zu anderen Opiaten in ug/kg/min, NIE als Bolus, HWZ 3-10 min", calc: { co: [["5 mg/50ml", 100], ["10 mg/50ml", 200]], cu: "µg/ml", w: 1, m: 60, s: [0.05], mx: 0.2 } },
+    { id: "vasopressin", n: "Vasopressin", sub: "", g: ["kreis"], std: "40 IE/40ml NaCl 0,9%", u: "IE/h", start: "1", step: "", max: "4", k: "nicht als titrierbarer Vasopressor verwenden!!!, so kurz wie möglich!!! IND: Substitution bei Sepsis", calc: { c: 1, cu: "IE/ml", m: 1, s: [1], mx: 4 } },
+    { id: "vendal", n: "Vendal", sub: "Morphin", g: ["sed"], std: "50 mg/50ml NaCl 0,9%", u: "mg/h", start: "1", step: "1", max: "10 (oder mehr)", k: "", calc: { c: 1, cu: "mg/ml", m: 1, s: [1], st: 1, mx: 10 } },
+    { id: "verapamil", n: "Verapamil", sub: "Isoptin", g: ["rr", "rhy"], std: "50 mg/50 ml NaCl 0,9%", u: "mg/h", dose: "0,05-0,1 ng/kg/h bei Hypertensiver Krise (Tagesdosis bis 1,5 ng/kg)", k: "HWZ: 4-7h, für AFIB keine klare Dosisempfehlung" },
+    { id: "cleviprex", n: "Cleviprex", sub: "Clevidipin", src: "Fachinformation", g: ["rr"], std: "0,5 mg/ml Emulsion, gebrauchsfertig (50 ml = 25 mg, 100 ml = 50 mg)", u: "mg/h", start: "2", step: "Verdopplung alle 90 sek", max: "32", k: "Erhaltung meist 4–6 mg/h. Max. 1000 ml/24 h (Lipidlast). Erfahrung > 72 h begrenzt. Bei Hypotonie/Reflextachykardie Dosis halbieren oder stoppen. Lichtschutz; nach Anbruch innerhalb von 12 h verwenden.", calc: { c: 0.5, cu: "mg/ml", m: 1, s: [2], mx: 32, dbl: 1, lv: [["Erhaltung", 4], ["Erhaltung", 6]] } },
+    { id: "hydal", n: "Hydal", sub: "Hydromorphon", src: "Fachinformation", g: ["sed"], std: "50 mg / 50 ml NaCl 0,9% = 1 mg/ml (Nachtdiensthilfe)", u: "mg/h", start: "0,15-0,45 (oder 0,004 mg/kg/h)", step: "", max: "", k: "i.v. Bolus: 1–1,5 mg langsam über mind. 2–3 min, alle 3–4 h. PCA: 0,2 mg Bolus, Sperrzeit 5–10 min. Ältere, Nieren-/Leberinsuffizienz: niedriger beginnen. Palliativ lt. Nachtdiensthilfe: Start 0,5 ml/h, Bolus 0,5 ml bis zu 6x/d.", calc: { c: 1, cu: "mg/ml", m: 1, s: [0.15, 0.45], lv: [["Palliativ", 0.5]] } }
+  ]
+};
+
+// Kurzinfo je Medikament (ergänzend, NICHT aus dem Perfusorstandard 13H3). Keine Dosisangaben.
+const PERF_INFO = {
+  adrenalin: "α+β-Agonist: Inotropie + Vasokonstriktion. CAVE Tachyarrhythmie, Laktat ↑, Hyperglykämie. Über ZVK.",
+  actilyse: "Fibrinolytikum. Blutungsrisiko – Kontraindikationen (frische Blutung, Stroke, OP, Trauma) prüfen.",
+  argatra: "Direkter Thrombininhibitor (z.B. bei HIT). Steuerung über aPTT. Leberinsuffizienz: Dosis ↓.",
+  arterenol: "α-Agonist, Vasopressor der 1. Wahl im Schock. Über ZVK. CAVE periphere/mesenteriale Ischämie, Paravasat-Nekrose.",
+  beriplex: "PPSB (Gerinnungsfaktorenkonzentrat): VKA-Antagonisierung, Blutung. CAVE Thromboembolie.",
+  brevibloc: "β1-selektiv, ultrakurz wirksam. CAVE Hypotonie, Bradykardie, dekompensierte Herzinsuffizienz.",
+  bricanyl: "β2-Agonist (Bronchospasmus). CAVE Tachykardie, Hypokaliämie, Hyperglykämie.",
+  brietal: "Kurzwirksames Barbiturat. CAVE Hypotonie, Atemdepression.",
+  catapresan: "Zentraler α2-Agonist. CAVE Bradykardie, Hypotonie; Rebound-Hypertonie bei abruptem Absetzen.",
+  cormagnesin: "Magnesium. CAVE Hypotonie, Bradykardie; Kumulation bei Niereninsuffizienz (Reflexe, Atmung).",
+  corotrop: "PDE3-Hemmer (Inodilatator). CAVE Hypotonie, Arrhythmien; Niereninsuffizienz: Dosis ↓.",
+  dexdor: "α2-Agonist: Sedierung ohne relevante Atemdepression. CAVE Bradykardie, Hypotonie.",
+  dilzem: "Ca-Antagonist (Non-DHP). KI: dekompensierte HFrEF, höhergradiger AV-Block. CAVE Hypotonie.",
+  dobutrex: "β1-Agonist (Inotropie). CAVE Tachykardie, Arrhythmien, Hypotonie.",
+  dopamin: "Dosisabhängig dopaminerg / β / α. CAVE Tachyarrhythmien.",
+  dormicum: "Benzodiazepin. CAVE Atemdepression, Delir, Kumulation (Leber/Niere). Antidot Flumazenil (Anexate).",
+  ebrantil: "α1-Blocker, kaum Reflextachykardie. CAVE Hypotonie.",
+  esmeron: "Nicht-depolarisierendes Muskelrelaxans – nur unter Sedierung + Beatmung. Antidot Sugammadex.",
+  fentanyl: "Opioid. CAVE Atemdepression, Thoraxrigidität bei Bolus, Kumulation. Antidot Naloxon.",
+  flolan: "Prostazyklin (pulmonaler Vasodilatator). CAVE Hypotonie; nicht unterbrechen (Rebound-PH, kurze HWZ).",
+  gilurytmal: "Klasse-Ia-Antiarrhythmikum. EKG-Monitor: QRS-Verbreiterung, AV-Block, Proarrhythmie.",
+  g1p: "Phosphatsubstitution. Phosphat und Calcium kontrollieren.",
+  haldolb: "Butyrophenon-Neuroleptikum. CAVE QTc/Torsades, EPS; KI M. Parkinson. EKG.",
+  haldolp: "Butyrophenon-Neuroleptikum. CAVE QTc/Torsades, EPS; KI M. Parkinson. EKG.",
+  hepamerz: "L-Ornithin-L-Aspartat: Ammoniaksenkung bei hepatischer Enzephalopathie.",
+  heparin: "Unfraktioniertes Heparin. Kontrolle aPTT, Thrombozyten (HIT). Antidot Protamin.",
+  hydrocortone: "Glukokortikoid im septischen Schock. CAVE Hyperglykämie, Infekt, Delir.",
+  haemocomplettan: "Fibrinogenkonzentrat. Nach Spiegel/ROTEM. CAVE Thromboembolie.",
+  insulin: "Kurzwirksames Humaninsulin. Engmaschig BZ und Kalium (Hypokaliämie!).",
+  isoptin: "Ca-Antagonist (Non-DHP). KI: HFrEF, AV-Block, WPW mit VHF. CAVE Hypotonie.",
+  isuprel: "β1+β2-Agonist: Frequenzanhebung. CAVE Tachyarrhythmie, Hypotonie, Ischämie.",
+  kcl: "Kalium. Monitor + Kontrollen; CAVE Arrhythmien bei zu rascher Gabe, Phlebitis.",
+  kmalat: "Kalium. Monitor + Kontrollen; CAVE Arrhythmien bei zu rascher Gabe, Phlebitis.",
+  ketanest: "NMDA-Antagonist: analgetisch, kreislaufstabil, bronchodilatierend. CAVE Hypertonie, Tachykardie, Halluzinationen.",
+  lasix: "Schleifendiuretikum. CAVE Hypokaliämie, Hypovolämie, Ototoxizität bei hohen Dosen.",
+  lidocorit: "Klasse-Ib-Antiarrhythmikum. CAVE ZNS-Toxizität (Krämpfe), Kumulation bei Leber-/Herzinsuffizienz.",
+  minirin: "V2-Agonist: F VIII/vWF ↑. CAVE Hyponatriämie, Flüssigkeitsretention, Tachyphylaxie.",
+  minprog: "Prostaglandin E1 (Vasodilatator). CAVE Hypotonie, Flush.",
+  nipruss: "NO-Donor, arterielle + venöse Dilatation. Arterielle Druckmessung. CAVE Cyanid-/Thiocyanat-Toxizität.",
+  novoseven: "Rekombinanter Faktor VIIa. CAVE Thromboembolie.",
+  pantoloc: "Protonenpumpenhemmer (obere GI-Blutung).",
+  perlinganit: "Nitroglycerin, v.a. venöse Dilatation. KI: PDE5-Hemmer, schwere AS, RV-Infarkt. Toleranzentwicklung.",
+  prograf: "Calcineurininhibitor. Spiegel! CAVE Nephrotoxizität, Hyperkaliämie, CYP3A4-Interaktionen.",
+  propofol: "Hypnotikum. CAVE Hypotonie, Propofol-Infusionssyndrom (hohe Dosis, lange Dauer), Triglyceride.",
+  rapibloc: "β1-hochselektiv, ultrakurz wirksam. CAVE Bradykardie, Hypotonie.",
+  prothromplex: "PPSB (Gerinnungsfaktorenkonzentrat): VKA-Antagonisierung, Blutung. CAVE Thromboembolie.",
+  sandimmun: "Calcineurininhibitor. Spiegel! CAVE Nephrotoxizität, Hypertonie, Interaktionen.",
+  sedacoron: "Klasse-III-Antiarrhythmikum. CAVE QTc, Hypotonie, Bradykardie, Schilddrüse; peripher phlebitisch.",
+  simdax: "Ca-Sensitizer (Inodilatator), lange Wirkdauer. CAVE Hypotonie, Hypokaliämie, Arrhythmien.",
+  somatostatin: "Splanchnikus-Vasokonstriktion (Varizenblutung). CAVE Hyperglykämie, Bradykardie.",
+  suprablitz: "Verdünntes Adrenalin für Boli (10 µg/ml).",
+  suprarenin: "α+β-Agonist: Inotropie + Vasokonstriktion. CAVE Tachyarrhythmie, Laktat ↑, Hyperglykämie. Über ZVK.",
+  theospirex: "Methylxanthin, geringe therapeutische Breite – Spiegel. CAVE Tachyarrhythmie, Krampfanfälle.",
+  thiopental: "Barbiturat. CAVE Hypotonie, Kumulation, Gewebsnekrose bei Paravasat.",
+  ultiva: "Ultrakurz wirksames Opioid, keine Kumulation. CAVE Atemdepression, Bradykardie, Hyperalgesie nach Stopp.",
+  vasopressin: "V1-Agonist. CAVE mesenteriale, digitale und koronare Ischämie.",
+  vendal: "Opioid. CAVE Atemdepression, Histaminfreisetzung, Kumulation bei Niereninsuffizienz. Antidot Naloxon.",
+  cleviprex: "Dihydropyridin-Ca-Antagonist, ultrakurz (Wirkeintritt < 2 min, HWZ ca. 1 min). KI: Soja-/Erdnuss-/Ei-Allergie, Fettstoffwechselstörung, schwere AS.",
+  hydal: "Opioid. KI: Atemdepression, schweres Asthma/COPD, Cor pulmonale, paralytischer Ileus, MAO-Hemmer. CAVE mit Benzodiazepinen. Antidot Naloxon.",
+  verapamil: "Ca-Antagonist (Non-DHP). KI: HFrEF, AV-Block, WPW mit VHF. CAVE Hypotonie."
+};
+
+// Nachtdiensthilfe V1.3 (Spannbauer / Lenz / Duca / Hofbauer, 2024.12.01) – Text wörtlich.
+// Blocktypen: h (Zwischenüberschrift; hw = Warnfarbe), ul (Liste; Unterpunkte als [text, [sub...]]), ol, p, tool
+// [[...]] = Telefonnummer (antippen = kopieren)
+const NACHT = {
+  meta: { title: "Nachtdiensthilfe", version: "V1.3 · 2024.12.01", pdf: "pdfs/nachtdiensthilfe-v1.3.pdf" },
+  groups: [
+    { id: "rhy", t: "Rhythmus", topics: ["brady", "tachy", "ecv"] },
+    { id: "kreis", t: "Kreislauf · Atmung · Brust", topics: ["hypert", "loed", "hypot", "laktat", "broncho", "dyspnoe", "thorax"] },
+    { id: "sympt", t: "Symptome", topics: ["schmerz", "fieber", "schlaf", "delir", "neuro", "obstip", "durchfall"] },
+    { id: "lab", t: "Kalium · Dialyse", topics: ["hypok", "hyperk", "dialyse"] },
+    { id: "allerg", t: "Allergie · Kontrastmittel", topics: ["allergie", "kmallergie", "jod"] },
+    { id: "blut", t: "Blut · Antikoagulation", topics: ["ek", "inhixa"] },
+    { id: "med", t: "Notfall · Palliativ", topics: ["notfallmed", "palliativ"] },
+    { id: "org", t: "Organisation", topics: ["roentgen", "zustaendig"] }
+  ],
+  topics: {
+    brady: { t: "Bradykardie", blocks: [
+      { h: "Frage #1: ist der Patient instabil?" },
+      { ul: ["MAP <60 mmHg (CAVE: Vorwerte beachten)", "Patient bewusstseinsgetrübt / neurologisch verändert", "Patient kaltschweißig / minderperfundiert", "vBGA: Anstieg Lactat?"] },
+      { h: "Wenn Patient instabil = Notfall:", hw: 1 },
+      { ul: ["OA UND 13H3 beiziehen", "sofort Atropin 0.5 mg i.v. im Bolus; kann bis zu sechsmal in 3-5 min-Abständen wiederholt werden", "Suprablitz herrichten lassen (1 mg Suprarenin in 100 mL NaCl 0.9%) – CAVE: KEIN Spielzeug!", "Volumen i.v.", "Isuprel-Perfusor: 1 mg / 50 mL NaCl 0.9%, Startrate 2 ml/h (0.02 gamma), frei titrieren je nach Frequenz", "transcutanes Pacing über den Defi (in der Verzweiflung; nur unter Sedierung): Defi-Pads aufkleben, Dormicum und Ketanest vorbereiten lassen; Pacing bei Eintreffen des OA / 13H3", "passageren Schrittmacher über 13H3 einschwemmen"] },
+      { h: "Wenn Patient stabil:" },
+      { ul: ["12-Kanal-EKG schreiben und Monitorausdruck; je nach Rhythmus weiteres Vorgehen", "bradykardisierende Substanzen absetzen"] }
+    ] },
+    tachy: { t: "Tachykardie", blocks: [
+      { h: "Frage #1: ist der Patient instabil?" },
+      { ul: ["MAP <60 mmHg? (CAVE: Vorwerte beachten)", "Patient bewusstseinsgetrübt / neurologisch verändert?", "Patient kaltschweißig / minderperfundiert?", "vBGA: Anstieg Lactat?"] }
+    ], tabs: [
+      { t: "Tachykardes VHF", blocks: [{ ul: ["orale beta-Blocker kann man vorziehen", "Sedacoron 150-300 mg ad KI (KI: manifeste Hyperthyreose, QTc > 500 ms, Jodallergie)", "Digimerck 1 Amp. (0.25 mg) ad KI (KI: Bradykardie, AVB °II-III, WPW)", "Cormagnesin 400 mg i.v.", "bei Instabilität: elektrische Cardioversion (Patient:in nüchtern lassen!)"] }] },
+      { t: "VT, gut toleriert", blocks: [{ ul: ["cave: Vor-EKGs sichten; hat der Patient schon einen bekannten Schenkelblock? Wenn ja, weniger akuter Handlungsbedarf", "Sedacoron 300 mg i.v. (wenn echte VT, KI: Torsaden!)", "Crash Car holen und eCV vorbereiten (siehe unten)", "OA UND 13H3 kontaktieren"] }] },
+      { t: "VT, nicht toleriert", w: 1, blocks: [{ ul: ["sofortige Cardioversion (cave: SYNC muss man vor UND nach jedem Schock drücken)", "CPR", "Herzalarm ([[1112]]) rufen lassen (!) (CAVE: Ebenenalarm ≠ Herzalarm)"] }] },
+      { t: "Torsades", blocks: [{ ul: ["2 g Magnesiumsulfat i.v. über 10 min (z.B. 10 ml Cormagnesin 400 oder 20 ml Cormagnesin 200)", "sonst wie bei der VT (KEIN Sedacoron!)", "mittelfristig: Frequenz steigern (Isuprel, passagerer PM)"] }] }
+    ] },
+    ecv: { t: "Elektrische Cardioversion", blocks: [
+      { ul: ["NICHT alleine machen! DHOA UND 13H3 beiziehen außer es geht nicht anders!", ["Vorbereitungen:", ["Crash Car holen", "Venturimaske und Sauerstoff bereithalten", "Patientenkurve ins Zimmer mitnehmen", "Cormagnesin 400 mg i.v. (NUR wenn Zeit dafür ist)", "Dormicum vorbereiten (2 Amp. à 5 mg in 10 mL = 1 mg/mL)", "Defi-Paddles idealerweise anterior / posterior kleben (wenn möglich)", "SYNC-Button drücken!", "Schock = 200J", "CAVE: nach JEDEM Schock muss man neu SYNC drücken!"]]] }
+    ] },
+    hypert: { t: "Hypertonie", blocks: [
+      { ul: ["Therapie einleiten ab RRsys > 160 mmHg", "cave: immer auf das hypertensive Lungenödem achten (insbesondere bei AS und HFrEF)", "Baypress (Nitrendipin) 10 mg p.o.; cave KI: AS °II-III, MS II-III, HOCM", "Ebrantil (Urapidil) i.v. in 12.5 mg-Schritten (ad KI), geht eigentlich immer!"] }
+    ] },
+    loed: { t: "Hypertensives Lungenödem", blocks: [
+      { ul: ["Die wichtigsten Prinzipien: NIV & Nitro!", "Nitro 1-2 Hübe s.l. bei RR >100mmHg Systole (cave KI: hochgradige AS, Rechtsventrikelinfarkt, PDE5-Hemmer)", "CPAP-Maske: Starteinstellungen FiO2 100%, PEEP 5 mbar, DU 5 mbar (danach Titration von FiO2, PEEP und DU)", "Vendal 1/2 Ampulle i.v. und 1/2 Ampulle s.c. (CAVE: NICHT routinemäßig -> Bailout)", "Lasix 80 mg i.v. im Bolus (Initialeffekt durch venöses Pooling, nicht Diurese)", "Ebrantil 25 mg i.v. als Kurzinfusion", "Bettröntgen bestellen (KLAT UND [[81-6065]])", "Aldactone 100 mg i.v. (aber: deutlich verzögerter Wirkeintritt, also kein akuter Effekt)"] }
+    ] },
+    hypot: { t: "Hypotonie", blocks: [
+      { ul: ["Volumen i.v. (z.B. Elomel oder Ringer-Lactat)", "in dubio vBGA: Lactatanstieg? (egal ob venös oder arteriell)", ["Ursachenfindung", ["Blutung?", "Kardiogener Schock?", "(überdosierte) Medikation?", "Vegetativ / Schmerzen / Vagusreflex?", "Fieber / Sepsis? ZVK?", "Perikarderguss / Tamponade?"]]] }
+    ] },
+    laktat: { t: "Laktatanstieg (Basics)", blocks: [
+      { ul: [["vBGA -> milder Laktatanstieg (bis 2.5 mmol/L, max. 3 mmol) -> Volumsstatus checken -> meist ist Pat trocken -> 500ml Elomel i.v. (CAVE bei Herzinsuffizienz)", ["Wenn euvoläm / hypervoläm (Bedside TTE -> RV gut/stark gefüllt? Vena cava >2.5 cm ohne resp. Kaliberschwankungen?)", "wenn ZVK dann zentralvenöse Sättigung (sollte >65% sein) wenn nicht -> Dobutrex?"]]] }
+    ] },
+    broncho: { t: "Bronchospasmus", blocks: [
+      { ul: ["Berodualin 20 ggt p.inh.", "Soludacortin 250 mg i.v. (cave: delirogen, Hyperglykämie, Leukozytose am nächsten Tag)", "Bricanyl 0.5 mg ½ Amp s.c. ggf. nach 20 min wiederholen (gut wenn z.B. gerade keine inhalative Therapie gegeben werden kann!)", "CPAP (PEEP & DU)", "DDx / Overlap mit Lungenödem!"] }
+    ] },
+    dyspnoe: { t: "Dyspnoe / Vd.a. PE", blocks: [
+      { ul: ["wichtig: bestimme kein D-Dimer wenn du nicht mit den Konsequenzen leben kannst!", "Vd.a. PE: FAST Bedside-TTE. Wenn RV balloniert und schlecht -> KEIN D-dimer und gleich in die PE-Spirale", "Bettröntgen bestellen (Stauung? Erguss? Pneumothorax? Infiltrat?)"] }
+    ] },
+    thorax: { t: "Thoraxschmerz", blocks: [
+      { ul: ["klinischer Status: wenn durch Manipulation provozierbar ist es wohl kein ACS", "EKG schreiben und mit Vorbefunden vergleichen", "cave: de novo LSB/RSB und Thoraxschmerz = STEMI!", "Troponin T 0 h und 1 h (wenn notwendig selbst stechen und wenn möglich nach 5H bringen; sonst Akutträger: über Logbuch im AKIM anmelden)", "Rücksprache HK-Senior ([[24230]], [[81-2422]])"] }
+    ] },
+    schmerz: { t: "Schmerzen", blocks: [
+      { ul: ["Novalgin 1000 mg i.v. in KI (cave RR-Abfall)", "Tramal 50 mg i.v. in KI (cave RR-Abfall, Antiemetikum prophylaktisch geben)", "Paracetamol 1000 mg i.v. in KI", "Dipidolor 1/2 Ampulle i.v. (wenn unbedingt notwendig)", "bedenke das WHO-Stufenschema", "wer Opioide gegen die Schmerzen braucht, hat in der Regel einen guten Grund; Ursachenfindung! Schmerzkonsil beiziehen!", "Bei Opiaten -> an Verstopfung denken!"] }
+    ] },
+    obstip: { t: "Verstopfung / Obstipation", blocks: [
+      { h: "Konservativ" },
+      { ul: ["Laevolac 1 EL, 1-0-0 bis 1-0-1 (= Präbiotikum, Lactulose)", "Laxogol = Molaxole -> 1-0-0 bis 1-1-1 (= osmotisches Laxans) (= WHO I)", "Natriumpicosulfat = Guttalax, Laxasan, Agaffin (= WHO II+I)S"] },
+      { h: "Aktiv abführend" },
+      { ul: ["Laxbene = Dulcolax -> 1-0-0 bis 2-0-0 (= stimulierendes Laxans) (gibt es auch als Zäpfchen!)"] }
+    ] },
+    durchfall: { t: "Durchfall", blocks: [
+      { ul: ["Generell geben wir kein Loperamid auf der Kardio (auf Onko ständig)", "Meistens hierorts durch Antibiotika verursacht", "Wenn Mechanismus unbekannt/ Vd.a. Infektion -> Stuhlkultur + C. diff. Toxin", "i.v. Flüssigkeit / Elektrolyte kontrollieren"] }
+    ] },
+    fieber: { t: "Fieber", blocks: [
+      { ul: ["wichtig: dran denken, Temperatur messen wir hier viel zu wenig", "hat der Patient altes / infiziertes Plastik? (Insbes. ehemalige Onkopatient:innen und deren Port-a-cath)", "Infektdiagnostik: 2x2 Blutkulturen (aus verschiedenen Venen!), Harnstix, Harnkultur, respiratorisches Panel (PCR)", "erst nach Abnahme der Kulturen mit Antibiotikum beginnen", "Fiebersenkung: Novalgin 1 g i.v. oder Perfalgan (= Paracetamol) 1 g i.v."] },
+      { link: ["Therapieempfehlungen Infektiologie", "https://innere-med-1.meduniwien.ac.at/unsere-klinischen-abteilungen/infektionen-und-tropenmedizin/allgemeine-informationen/therapieempfehlungen/"] }
+    ] },
+    allergie: { t: "Allergische Reaktion (und Transfusionsreaktion)", blocks: [
+      { ul: ["SOFORT Herzalarm UND OA verständigen!", "≥ 2 großlumige (=grün) i.v Zugänge legen!", "Adrenalin 0.5 mg i.m. (vastus lateralis) bei hämodynamischer Relevanz (bei anaphylaktischem Schock) Wichtig: Nur Suprarenin (1:1000) i.m. geben und NICHT L-Adrenalin (1:10.000)", "Alternativ: Supra-Blitz mL-weise (1mg Suprarenin in 100mL NaCL 0.9%)", "Soludacortin 250 mg i.v.", "Dibondrin 2 Amp. (60 mg) i.v."] }
+    ] },
+    kmallergie: { t: "Vorbereitung HK / CT bei KM-Allergie", blocks: [
+      { ul: ["lege artis und bei planbaren Eingriffen: Urbason 40 mg 12 h und 2 h vor KM-Gabe (klassische Radiologie-Vorbereitung)", "wenn es schnell gehen muss: Soludacortin 250 mg und Dibondrin 2 Amp. (60 mg) i.v. (klassische HK-Vorbereitung)"] }
+    ] },
+    jod: { t: "Jod-Vorbereitung vor Herzkatheter", blocks: [
+      { ul: ["Irenat 40 ggt 2-4 h vor und nach dem HK", "anschließend 21 ggt 1-1-1 für 7-14 Tage", "zusätzlich Thiamazol-Indikation mit OA Endokrinologie diskutieren"] },
+      { xref: ["sop", "kmhyper", "SOP Nuklearmedizin: KM bei Hyperthyreose"] }
+    ] },
+    hypok: { t: "Hypokaliämie", blocks: [
+      { tool: "kdef" },
+      { ul: ["EKG machen; Hypokaliämiezeichen?", "allgemeine Formel für Berechnung des Kaliumdefizit = (4.5 – X) * KG [kg] * 0.4 mVal", "Kalioral BTL p.o. = 39 mVal", "Micro-kal KPS p.o. = 8 mVal", "Banane 1 STK p.o. = 6-10 mVal (je nach Größe)", "Elozell spezial IFL i.v. = 24 mVal (cave: phlebotoxisch; langsam geben oder ZVK)", "K-malat i.v.: titrierbar (cave: phlebotoxisch; langsam geben über großen (≥grün) Venflon oder ZVK)", "cave: wer viel Kalium braucht, hat 1) einen Grund, 2) braucht einen ZVK"] }
+    ] },
+    hyperk: { t: "Hyperkaliämie", blocks: [
+      { ul: ["Plausibilitätsprüfung! -> Abnahmefehler? -> lieber zweite POC-Testung machen", "EKG machen; Hyperkaliämiezeichen?", "Stufentherapie mit Eskalation von Stufe 1 bis 6"] },
+      { tool: "hyperk" },
+      { ul: ["engmaschige K+-Kontrollen (initial einstündlich)", "wenn im Rahmen eines ANV: NaBic 8.4% (200 mL) i.v. aber NICHT wenn CO2 hoch ist (COPD, sediert)"] }
+    ] },
+    dialyse: { t: "Allgemeine Dialysekriterien", blocks: [
+      { p: "(Aller Erdkreis Ist Österreich Untertan)." },
+      { dl: [["A", "acidosis"], ["E", "electrolytes (Kalium! Phosphat!)"], ["I", "intoxication"], ["Ö", "(volume) överload"], ["U", "uremia"]] }
+    ] },
+    schlaf: { t: "Schlaflosigkeit", blocks: [
+      { ul: ["KEINE, KEINE, KEINE Benzodiazepine! NUR last resort, sonst haut euch der 19i-OA!", "Seroquel 25 mg p.o. (cave QTc) (gerne auch ein zweites Mal)", "Trittico 100 mg p.o. oder i.v. (cave QTc)", "Dibondrin 1 DRG p.o. (cave QTc, Delir)", "Passedan 20 ggt p.o. (für alle die was „Pflanzliches“ wollen / von Placebo profitieren)", "Circadin 2 mg p.o. (erst ab 50 a)", "Lendorm 0.25 mg p.o. (cave paradoxe Reaktion, weil Benzodiazepin; last resort!)"] }
+    ] },
+    delir: { t: "Delir", blocks: [
+      { ul: [["das Delir hat einen Grund!", ["akute Erkrankung (z.B. kardiogener Schock!)", "post-operativ", "Fieber?", "Infekt?", "Harnverhalt?", "Schilddrüse?"]], "für das Delir ist das nicht-pharmakologische Management wesentlich wichtiger; Pharmakotherapie nur bei sonst nicht beherrschbarer Agitation", ["nicht-pharmakologische Maßnahmen", ["aktive Orientierung („heute ist Freitag, der 29.11., Sie sind im AKH auf…, es ist XX Uhr“)", "Tagesstruktur geben (nicht tagsüber schlafen lassen! – Benzos am Abend kontraproduktiv - Hangover)", "Alltagsgegenstände von zuhause bringen lassen", "Angehörige auf Besuch holen"]], "Seroquel 50 mg p.o.", "Trittico 100 mg p.o. oder i.v. (Trazodon)", "Risperdal 1 mg p.o. (keine Akutwirkung, sondern erst nach ca. 2 Wochen)", "cave: KEINE Benzos außer in Verzweiflung / zum Sedieren (dann: Temesta 1 mg i.v.)", "DHOA Psychiatrie Akut beiziehen ([[81-3500]])", "eventuell Sitzwache anfordern"] }
+    ] },
+    neuro: { t: "Neurologische Eintrübung / Vd.a. Stroke", blocks: [
+      { ul: [["sofortige vBGA stechen:", ["pH?", "CO2?", "Glucose? „measure glucose in any funny patient”"]], "Vitalparameter messen und an den Monitor nehmen", "Stroke-Dienst beiziehen (KLAT UND [[81-3116]])", "wenn Opiat neu begonnen (+- resp. Verschlechterung + kleine Pupillen) -> an Überdosis denken! -> 1 Amp Naloxon (0.4 mg) i.v. – kann bis 2mg wiederholt werden", "wenn Benzodiazepin erhalten (z.B. nach eCV, TEE…) -> Anexate ½ Amp i.v., kann wiederholt werden bis 2 mg"] }
+    ] },
+    ek: { t: "EK abrufen", blocks: [
+      { ul: ["[[53220]] anrufen; wenn es keine EK gibt: „unausgekreuzt Null Negativ auf Notfall“ – (Wenn genügend Personal und wirklich dringend einfach runterfahren und holen)", "Sahara (Apotheke auf 19i) nicht unbedingt notwendig!", "Auf unserer Abteilung (Kardiologie): EK werden <8 g/dL Hb gegeben", "cave: Hb hinkt 1-2 h hinterher. Klinik (MAP, HF) und Lactat in den ersten Stunden wesentlich sensitiver!"] }
+    ] },
+    inhixa: { t: "Antikoagulation mit LMWH (Inhixa)", blocks: [
+      { tool: "inhixa" },
+      { h: "Prophylaktische Dosierung" },
+      { ul: ["grundsätzlich 40 mg [4000 IE) 0-0-1 s.c.", "keine unbedingte Anpassung bei Niereninsuffizienz"] },
+      { h: "Therapeutische Dosierung" },
+      { ul: ["1 [100 IE] mg/kg KG 1-0-1 s.c., aber maximal 100 mg [10000 IE] 1-0-1"] },
+      { h: "Dosisanpassung bei Niereninsuffizienz" },
+      { ul: ["CrCl >60 mL/min: keine Anpassung notwendig", "CrCl <60 mL/min: Dosierung nach antiXa"] },
+      { h: "anti-Xa-Messung" },
+      { ul: ["Blutabnahme 4 h nach Applikation der letzten Dosierung", "erst nach mindestens drei Applikationen wirklich verlässlich", "therapeutischer Zielbereich: 0.6 – 1.2 IU/mL"] },
+      { xref: ["sop", "inhixa", "SOP Inhixa (2020)"] }
+    ] },
+    notfallmed: { t: "Notfallmedikamente", blocks: [
+      { h: "Neosynephrine" }, { ul: ["1 Amp. (10 mg/mL) auf 500 mL Elomel NaCl 0.9% = 10 µg/mL", "Einzeldosis = 5-10 mL"] },
+      { h: "Suprablitz" }, { ul: ["1 mg Suprarenin (Epinephrin 1:1000) auf 100 mL NaCl 0.9% = 10 µg/mL", "Einzeldosis = 1 mL (cave: NaCl oder Infusion zum Nachspülen!)"] },
+      { h: "Atropin" }, { ul: ["1 Amp. = 0.5 mg i.v. im Bolus"] },
+      { h: "Dormicum" }, { ul: ["1 Amp. 15 mg / 3 mL + 12 mL NaCl 0.9%", "1 Bolus = 2-3 mL i.v."] },
+      { h: "L-Adrenalin (Epinephrin 1:10.000)", hw: 1 }, { ul: ["gibt es spritzfertig"] }
+    ] },
+    palliativ: { t: "Palliative Sedierung und Anxiolyse", blocks: [
+      { ul: ["palliative Sedierung ist keine Entscheidung, die man alleine trifft!"] },
+      { h: "Hydal (Hydromorphon)" }, { ul: ["Ziel: Schmerzlinderung und Dyspnoelinderung", "50 mg / 50 mL NaCl 0.9% = 1 mg/mL", "Startdosis 0.5 mL/h", "Bolus 0.5 mL bis zu 6x/d"] },
+      { h: "Dormicum (Midazolam)" }, { ul: ["Ziel: Unruhe vermeiden", "50 mg / 50 mL NaCl 0.9% = 1 mg/mL", "Startdosis 0.2 mL/h", "Bolus 0.5 mL bis zu 6x/d"] }
+    ] },
+    roentgen: { t: "Bettröntgen anfordern", blocks: [
+      { ul: ["RAD-KLAT stellen", "[[81-6065]]; Namen, DOB, Zimmernummer und Fallnummer bereithalten"] }
+    ] },
+    zustaendig: { t: "Wer ist zuständig?", blocks: [
+      { dl: [["Kardiologisches Konsil", "[[81-2600]]"], ["HK-Dienst", "[[24230]], [[81-2422]]"], ["13H3", "[[46450]], [[46440]]"]] },
+      { p: "EDM einloggen -> Tagesdienstplan von entsprechender Abteilung anschauen; sonst auf Station der Abteilung anrufen und nachfragen" },
+      { ul: ["CT/Röntgen/Sonographie (= Papierzuweisung) -> Leitstelle 6F [[48900]] (Pager erfragen = Radiologen-Tango)", "CT 6F – [[48700]], [[81-6070]] Pager", "Infektkonsildienst: [[81-2519]] (wenn keine Rückmeldung – auf 80 nachfragen – manchmal nachts nur mit Handy erreichbar, weil Rufbereitschaft)", "Herzchirurgie (akuter Perikarderguss, PM etc.) – OP-Gruppe 2 anrufen [[52620]] und nachfragen wer zuständig ist", "Bei Blutung auch an Interventionelle Radiologie (Leitstelle 8F) denken! Sind oft kooperativer als Gefäßchirurgie!"] },
+      { dl: [["Neuro-Konsil", "[[81-3112]]"], ["Stroke-Dienst", "[[81-3116]]"], ["Notfall Oberarzt Telefon", "[[76600]]"], ["ICU-Koordinator Roter Turm", "[[81-5660]]"], ["ICU-Koordinator Grüner Turm", "[[81-4802]]"]] }
+    ] }
+  },
+  // Hyperkaliämie – Stufentherapie wörtlich; k = App-Zuordnung zum eingegebenen Kaliumwert
+  hyperkSteps: [
+    { n: 1, t: "Azidose ausgleichen! (Kalium Senkung um 0.6mmol/L pro 0.1 pH Wert)", k: "all" },
+    { n: 2, t: "5.5-5.9 mmol/L: Lokelma 10 g p.o. 1-1-1 für 1-2 Tage", lo: 5.5, hi: 5.95 },
+    { n: 3, t: "6.0-6.5 mmol/L: 10 IE Novorapid in 250 mL 10% Glucose i.v.", lo: 5.95, hi: 6.5 },
+    { n: 4, t: "≥ 6.5 mmol/L + EKG positiv: Calciumgluconat 10% 30 mL i.v. über 5 min", lo: 6.5, ekg: 1 },
+    { n: 5, t: "≥ 6.5 mmol/L + EKG negativ: Salbutamol 10-20 mg p.inh.", lo: 6.5, ekg: 0 },
+    { n: 6, t: "spätestens ab Stufe 4: DHOA / 13H3 anrufen; Dialyse über 13I3 anmelden", lo: 6.5 }
+  ],
+  // Arzneimittelinformation Apotheke (09/2023) – Kapitel mit PDF-Seite
+  apotheke: { pdf: "pdfs/apotheke-arzneimittelinfo-jungaerzte.pdf", ch: [
+    ["Antikoagulation (NOAK-Dosierung)", 3], ["Schlafstörungen", 5], ["Delir", 12], ["Schmerztherapie", 14], ["Parenterale Elektrolytpräparate", 15],
+    ["Blutzuckerausgleich", 22], ["Antidota", 23], ["Diarrhoe", 24], ["Obstipation", 25], ["Hypertensive Krise", 26]
+  ] }
+};
+
+// SOPs Kardiologie + Arbeitsanweisungen + Formulare – Text wörtlich.
+const SOP = {
+  items: [
+    { id: "tavi", t: "TAVI", stand: "Stand 2020.10.29", tabs: [
+      { t: "Evaluierung", blocks: [{ ul: [
+        "Labor (Blutbild, Chemie, Gerinnung) – „Aufnahmeblute\"",
+        "TTE (KLAT schreiben; Ausdruck auf Wand hängen; Patient wird abgerufen)",
+        "Lungenfunktion (KLAT schreiben; Terminvergabe [[47700]] oder [[61410]]); wenn auch SAVR-Kandidat",
+        "Linksherzkatheter (KLAT schreiben; Terminvergabe [[81-2425]])",
+        "Carotis-Duplex (KLAT schreiben; Patient wird abgerufen); wenn auch SAVR-Kandidat",
+        "DPD-Scan (wissenschaftlich – TAVI-Team in RS mit Dr. Christian Nitsche)",
+        "Nativ-CT der Aortenklappe mit Calcium-Scoring sowie KM-Aufnahme der gesamten Aorta (RAD-KLAT, Terminvergabe über Leitstelle 8F ([[58270]]) / CT-Angio ([[81-6005]]) und Zuständigen-Pager)",
+        "Vorstellung im Heart Team am Mittwoch"] }] },
+      { t: "Prä", blocks: [
+        { ul: ["Labor: P2000", "Revers", "Sign-In ausfüllen", "Prä-Anästhesie: KLAT schreiben, Patient wird in Ambulanz abgerufen", "ZVK: wenn Patient als erster Punkt, ZVK über 13H3 am Vortag organisieren ([[46440]])", "2-4 EK und 1 TK bestellen – in Kurve einschreiben, auf Abruf"] },
+        { h: "Antikoagulation" },
+        { ul: ["T-ASS weiter", ["Marcoumar pausieren: 6-10 d vorher, Ziel-INR < 2", ["Bridging mit LMWH (Inhixa 1 IE/ kg KG 1-0-1)", "am Tag der Intervention pausieren (außer bei schlechter Niere; bei < 30 am Abend davor)"]], ["NOAC", ["NOACs brauchen kein Bridging!", "Eliquis, Xarelto, Lixiana: am Tag der Intervention pausieren", "Pradaxa: pausieren nach GFR"]]] },
+        { tbl: [["GFR", "Pradaxa-Pause"], ["> 80", "24 h"], ["80-50", "36 h"], ["50-30", "48 h"], ["< 30", "48 h"]] },
+        { h: "Medikation" },
+        { ul: ["Beta-Blocker pausieren (Komplikation: AVB!)", "Metformin 24 h vorher pausieren (GFR < 60)", "SGLT2-Inhibitoren 48 h vorher pausieren", "Sonstiges: je nach prä-anästhesiologischem Konsil"] }
+      ] },
+      { t: "Post", blocks: [
+        { ul: ["Labor: P2000 an D1, D2, D3", "Monitor 24 h lang", "EKG einmal täglich drei Tage lang", ["TTE: am ersten Tag post TAVI", ["mittlerer Gradient < 12 mmHg: super; < 20 mmHg: ok; > 20 mmHg -> RS mit TAVI-Team"]], "Duplex-Sonographie der Leiste: am ersten Tag post TAVI", "ZVK und Arterie: rasch entfernen"] },
+        { h: "Antithrombotische Therapie post-TAVI" },
+        { ul: [["noch keine OAK:", ["T-ASS 100 mg 1-0-0 lebenslang"]], ["OAK bereits etabliert", ["wenn bereits Marcoumar: 3-2-1-INR unter therapeutischem Inhixa-Bridging"]]] },
+        { ul: ["Nachsorgetermin in TAVI-Ambulanz in 3 Monaten über M. Vertesich ([[48590]], [[81-2312]])"] }
+      ] }
+    ] },
+    { id: "clip", t: "MitraClip / TriClip", stand: "Stand 2020.03.13", tabs: [
+      { t: "Evaluierung", blocks: [{ ul: ["Labor (Blutbild, Chemie, Gerinnung) – Aufnahmeblute", "TTE", "TEE", "Links- und Rechtsherzkatheter", "STS-Score und EURO-Score berechnen", "Vorstellung im Heart Team am Mittwoch („Gerges-Folie\")"] }] },
+      { t: "Prä", blocks: [
+        { ul: ["Labor: P2000", "Revers", "Sign-In"] },
+        { h: "Antikoagulation" },
+        { ul: ["T-ASS weiter", ["Marcoumar pausieren: 6-10 d vorher, Ziel-INR < 2", ["Bridging mit LMWH (Inhixa 1 IE/ kg KG 1-0-1)", "am Tag der Intervention pausieren (außer bei schlechter Niere; bei < 30 am Abend davor)"]], ["NOAC", ["Eliquis, Xarelto, Lixiana: am Tag der Intervention pausieren", "Pradaxa: pausieren nach GFR"]]] },
+        { tbl: [["GFR", "Pradaxa-Pause"], ["> 80", "24 h"], ["80-50", "36 h"], ["50-30", "48 h"], ["< 30", "48 h"]] },
+        { h: "Medikation" },
+        { ul: ["Metformin 24 h vorher pausieren (GFR < 60)", "Jardiance / Januvia 48 h vorher pausieren"] }
+      ] },
+      { t: "Post", blocks: [
+        { ul: ["Labor: Blutbild, Chemie, Gerinnung", "Monitor 12 h lang – Rücksprache mit Pflege", "TTE: am ersten Tag post Clip", "Duplex-Sonographie der Leiste: am ersten Tag post Clip", "Termin in der Clip-Ambulanz ausmachen über Lila M ([[48590]])"] },
+        { h: "Antikoagulation" },
+        { ul: ["Thrombo-ASS lebenslang", ["Wenn bereits Marcoumar:", ["Marcoumar: 1 d 3x, 1 d 2x, 1 d 1x, dann nach INR"]], "Wenn noch kein Marcoumar: Plavix 75 mg 1-0-0 für drei Monate"] }
+      ] }
+    ] },
+    { id: "hk", t: "Herzkatheter diagnostisch", stand: "Stand 2020.03.13", tabs: [
+      { t: "Aufnahmetag", blocks: [
+        { ul: ["Labor – Aufnahmelabor, inkl. Lipide und HbA1c", "EKG", "Revers", "Röntgen Thorax (Papierzuweisung)"] },
+        { h: "Plättchenhemmung" }, { ul: ["Thrombo-ASS weiter", "P2Y12-Inhibitoren weiter"] },
+        { h: "Orale Antikoagulation" },
+        { ul: [["Marcoumar pausieren: 6-10 d vorher, Ziel-INR zum Katheter < 2", [["Bridging mit LMWH", ["Inhixa 1 mg / kg KG 1-0-1", "am Abend vor der Intervention pausieren"]]]], "NOAC pausieren am Tag der Intervention (cave: Niere!)"] },
+        { h: "andere Medikation" }, { ul: ["Metformin 24 h vorher pausieren bei schlechter Niere (GFR < 60)"] }
+      ] },
+      { t: "Tag 1 post", blocks: [
+        { ul: ["Duplexsonographie der Leiste, wenn klinisch indiziert", "TTE am Folgetag, je nach Zeitpunkt des letzten Echos"] },
+        { h: "Plättchenhemmung / Antikoagulation" },
+        { ul: ["letztlich je nach HK-Befund", "stabile KHK mit Stents: T-ASS 100 mg lebenslang, Plavix 75 mg 1-0-0 für 6 Monate (bzw. Fortsetzung der DAPT davor)"] },
+        { ul: ["Entlassung am ersten Tag nach dem Katheter möglich"] }
+      ] }
+    ] },
+    { id: "ablation", t: "Katheterablation", stand: "Stand 2020.12.09", tabs: [
+      { t: "PVI / atyp. LA-Flattern", blocks: [
+        { h: "Vorbereitung" },
+        { ul: [["Orale Antikoagulation", [["Pause der oralen Antikoagulation (bei normaler Nierenfunktion)", ["Eliquis und Pradaxa: letzte Einnahme am Abend vor dem Eingriff", "Lixiana und Xarelto: letzte Einnahme am Tag / Abend (je nach Einnahmeart) vor dem Eingriff"]]]], "beta-Blocker belassen", "Antiarrhythmika belassen", ["Thrombusausschluss", ["Patient durchgehend OAK, Flimmern im EKG: Thrombusausschluss notwendig", "Patient durchgehend OAK, SR im EKG: kein Thrombusausschluss", "Keine OAK: Thrombusausschluss notwendig"]], "TTE vor Ablation", "bei Kryo-Ballon-PVI (zumeist jeder 3. Mittwoch): Herz CT (i.d.R. vorab geplant)"] },
+        { h: "Procedere post-Ablation" },
+        { ul: ["Pantoloc 40 mg i.v. sofort bei Rückkehr", "Pantoloc 40 mg 1-0-1 p.o. für vier Wochen", "Sucralfat 1 g 1-1-1 für vier Wochen", "Antikoagulation am selben Abend nach der Ablation wieder beginnen, Uhrzeit: siehe Befund", "EKG post-Ablation und am E-Tag zur Dokumentation eines Sinusrhythmus", "Duplex-Sonographie der Leiste: nur wenn klinisch indiziert", "TTE: Fragestellung Perikarderguss („System-TTE\" bei Valenzen, sonst Handheld auf Station)", "Termin in der Rhythmusambulanz: nach Befund oder über [[61351]]"] }
+      ] },
+      { t: "Typ. Flattern (Isthmus)", blocks: [
+        { h: "Vorbereitung" },
+        { ul: ["keine Pause der OAK notwendig (keine transseptale Punktion)", "beta-Blocker belassen", "Antiarrhythmika belassen", ["Thrombusausschluss: es gilt exakt dasselbe wie für eine Kardioversion", ["Patient durchgehend OAK (mind. 3 w), Flattern im EKG: kein Thrombusausschluss", "SR im EKG (unabhängig ob OAK oder nicht): kein Thrombusausschluss"]]] },
+        { h: "Procedere post-Ablation" },
+        { ul: ["EKG post-Ablation zur Dokumentation eines Sinusrhythmus", "Duplex-Sonographie der Leiste: nur wenn klinisch indiziert", "TTE: nur wenn klinisch indiziert (Fragestellung Perikarderguss)", "Termin in der Rhythmusambulanz: nach Befund oder über [[61351]]"] }
+      ] },
+      { t: "VES", blocks: [
+        { h: "Vorbereitung" },
+        { ul: ["gegebenenfalls TTE (auswärtiger Befund reicht auch)", "OAK Pause nur am Tag der Ablation"] },
+        { h: "Procedere post-Ablation" },
+        { ul: ["EKG post-Ablation zur Dokumentation eines Sinusrhythmus", "Duplex-Sonographie der Leiste: nur wenn klinisch indiziert", "TTE: nur wenn klinisch indiziert (Fragestellung Perikarderguss)", "Termin in der Rhythmusambulanz: nach Befund oder über [[61351]]"] }
+      ] },
+      { t: "EPU / pSVT", blocks: [
+        { h: "Vorbereitung" },
+        { ul: ["bradykardisierende Medikation sowie Antiarrhythmika einige Tage vor EPU pausieren (i.d.R. ist Patient schon entsprechend vorbereitet)", "gegebenenfalls TTE (auswärtiger Befund reicht auch)", "keine Pause der OAK notwendig"] },
+        { h: "Procedere post-Ablation" },
+        { ul: ["EKG post-Ablation zur Dokumentation eines Sinusrhythmus", "Duplex-Sonographie der Leiste: nur wenn klinisch indiziert", "TTE: nur wenn klinisch indiziert (Fragestellung Perikarderguss)", "Termin in der Rhythmusambulanz: nach Befund oder über [[61351]]"] }
+      ] }
+    ] },
+    { id: "inhixa", t: "Inhixa – parenterale Antikoagulation", stand: "Stand 2020.04.15", tabs: [
+      { t: "Prophylaktisch", blocks: [
+        { ul: ["Immobilisation im Verlauf des stationären Aufenthaltes"] },
+        { h: "Dosierung" }, { p: "40 mg 0-0-1 s.c." },
+        { h: "Im Detail" }, { ul: ["mäßiges Risiko für Thromboembolie: 20 mg 0-0-1 s.c.", "höheres Risiko für Thromboembolie oder reduzierte Mobilität: 40 mg 0-0-1 s.c. mind. 4-6 d lang"] }
+      ] },
+      { t: "Therapeutisch", blocks: [
+        { tool: "inhixa" },
+        { ul: ["Vorhofflimmern", "Pulmonalembolie (PE)", "Tiefe Beinvenenthrombose (DVT)"] },
+        { h: "Dosierung" }, { p: "1 mg/kg KG 1-0-1 s.c., aber maximal 100 mg 1-0-1 s.c." }
+      ] },
+      { t: "Niere · Anti-Xa", blocks: [
+        { h: "Nierenfunktionsstörungen" },
+        { tbl: [["CrCl (ml/min)", "Anpassung"], ["80 – 50", "keine"], ["50 – 30", "keine"], ["30 – 15", "prophylaktisch: 20 mg 0-0-1 s.c.\ntherapeutisch: 100 mg 0-0-1 s.c."]] },
+        { h: "anti-Xa · Therapeutischer Zielbereich" }, { p: "0.6 -1.2 IU/ml" },
+        { h: "Messzeitpunkt" }, { p: "4 h nach Applikation von Inhixa; erst nach drei Applikationen wirklich verlässlich" },
+        { xref: ["nacht", "inhixa", "Nachtdiensthilfe 2024: Inhixa"] }
+      ] }
+    ] },
+    { id: "kmhyper", t: "Jod-KM bei Hyperthyreose", stand: "Nuklearmedizin · gültig ab 31.05.2017", tabs: [
+      { t: "Erhöhtes Risiko", blocks: [
+        { p: "Erhöhtes Risiko einer jodinduzierten Hyperthyreose bei positiver Hyperthyreoseanamnese, supprimiertes TSH" },
+        { h: "Prophylaktische Therapie" },
+        { ul: ["500mg Perchlorat (= 35 Tropfen IRENAT) p.o. 2 - 4h vor und 2 - 4h nach Gabe von jodhältigem Kontrastmittel.", "Anschließend 2 x 300mg Perchlorat (= 21 Tropfen IRENAT) p.o. etwa über eine Woche."] }
+      ] },
+      { t: "Manifeste Hyperthyreose", blocks: [
+        { h: "Kontraindikation, nur bei absoluter Notwendigkeit der KM-Gabe", hw: 1 },
+        { h: "Therapie" },
+        { ul: ["500mg Perchlorat (= 35 Tropfen IRENAT) p.o. 2 - 4 h vor und 2 - 4 h nach Gabe von jodhältigem Kontrastmittel.", "Anschließend 3 x 300mg Perchlorat (= 21 Tropfen IRENAT) p.o. und 2x täglich Thiamazol 20mg über einen Zeitraum von zwei Wochen, danach Dosisanpassung"] },
+        { xref: ["nacht", "jod", "Nachtdiensthilfe: Jod-Vorbereitung vor HK"] }
+      ] }
+    ], pdf: "pdfs/km-hyperthyreose.pdf" },
+    { id: "vad", t: "VAD – Ventricular Assist Devices", stand: "13H3 · gültig ab 01.05.2019", tabs: [
+      { t: "Notfall · CPR", blocks: [
+        { h: "Notfälle", hw: 1 },
+        { p: "Sollte ein Notfall vorliegen, so ist in jedem Fall der/die VAD - KoordinatorIn unter der Notrufnummer Klappe [[22000]] zu verständigen. Bei nicht Erreichen OP II unter Klappe [[52620]]." },
+        { h: "Defibrillation und Reanimation" },
+        { ul: ["Die Defibrillation ist sowohl intern als auch extern möglich. Hierzu sind keine Geräte-protektiven Maßnahmen erforderlich. Die Defibrillationselektroden können an den üblichen Stellen angebracht werden. Es werden keine Veränderungen am VAD vorgenommen.", "Die Herzdruckmassage wird gemäß der ERC-Guidelines durchgeführt. Die Herzdruckmassage kann aufgrund der Position der Pumpe und der Position der Ausflusskanüle an der Aorta ein Risiko darstellen.", "Nach Herzdruckmassage wird die Überprüfung der ordnungsgemäßen Funktion und Position des VAD mittels TEE und ergänzendem C/P empfohlen. Ereignet sich die Reanimation innerhalb weniger Tage nach der VAD-Implantation, sollte Rücksprache mit den Chirurgen bezüglich einer eventuell nötigen Revisionsoperation gehalten werden.", "In jedem Fall sollte aber nach jeder Reanimation die Chrirurgie und die/der VADK durch die/den diensthabende/n Ärztin/Arzt verständigt werden."] },
+        { h: "Alarme" },
+        { ul: ["Die Alarme sind nach hoher, mittlerer und niedriger Dringlichkeit klassifiziert. Es ist immer eine Kombination aus visuellem und akustischem Alarm.", "Alarme mit hoher Dringlichkeit können nicht stumm geschaltet werden (z.B. „Keine Stromquelle“, „VAD gestoppt“ oder „Steuereinheit defekt“).", "Bei Unklarheiten und Problemen kann der/die VADK jederzeit verständigt werden.", "Kurzübersicht der wichtigsten Alarme auf jedem Wagen der VADK; „Alarm – Folder“ in den Hängeordnern am Stützpunkt."] }
+      ] },
+      { t: "Kontrollen · Monitoring", blocks: [
+        { h: "Kontrollen bei Patientenübernahme" },
+        { ul: ["Ordnungsgemäß am Patienten gesicherter Systemcontroller inklusive Zugentlastung der Driveline", "Driveline nicht geknickt oder verdreht", "Driveline frei von Beschädigungen (Risse, Löcher, Sprödigkeit, Blut im Lumen)", "Netzkabel nicht geknickt oder verdreht", "Systemcontroller vor Feuchtigkeit geschützt", "Verbandkontrolle der Driveline Austrittsstelle", "Ordnungsgemäß an der Ladestation angeschlossenes Netzkabel", "Systemcontroller mit zwei Stromquellen verbunden (AC/DC Adapter oder Akkus)", "Überprüfung des Akkuladestatus in der Akkuladestation", "Überprüfung des Stromversorgungsmodules", "Überprüfung ob Alarmübersicht-Folder vorhanden"] },
+        { h: "HeartMate III®" },
+        { ul: ["Netzanzeige grün (Gelbes Akkusymbol: interner Akku des Stromversorgungsmoduls < 15 Minuten Restkapazität)", "Akkusymbol grün (gelb = interner Akku wird geladen)", "Anzeige: „HeartMate CHARGER“", ["Ladeschacht 1 – 4 Kontrollleuchten", ["Grün: Akku geladen und einsatzbereit", "Gelb: Akku wird geladen getestet oder kalibriert", "Gelb blinkt: Akku muss kalibriert werden", "Rot: Akku oder Ladeschacht defekt"]]] },
+        { h: "HVAD HeartWare®" },
+        { ul: ["Kontrollleuchte „Ready“ grün (Akku einsatzbereit)", "Kontrollleuchte „Status“ inaktiv (Akku nicht angeschlossen oder bereit); Gelb: Akku wird geladen (nicht verwenden)", "Netzanzeige grün"] },
+        { h: "Dokumentation (Ärzt:innen 13H3)" },
+        { ul: ["„Flow“, „Speed“, „Power“, „Pulsabilität“ oder „Waveness“ ein- bis dreimal täglich und bei jeder Änderung dokumentieren.", "Einstellungen am VAD ausschließlich durch Ärztinnen und Ärzte der Station 13H3 bzw. VADK."] },
+        { h: "Spezielles Monitoring" },
+        { ul: ["Geringerer oder fehlender pulsatiler Fluss: Pulsoxymetrie sowie arterielle und nichtinvasive Blutdruckmessung betroffen.", "Abweichung von Stationsstandards als AAO im PDMS dokumentieren.", "Alarm „statischer Druck“ bei arterieller Messung: nach AAO „ART“ auf „ICP“ umstellen (nur Mitteldruck)."] }
+      ] },
+      { t: "Transport · Mobilisation", blocks: [
+        { h: "Transport" },
+        { ul: ["Jeglicher Transport sollte gemeinsam mit einer/einem VADK durchgeführt werden.", "Neben Defibrillator und Notfallmedikamenten sind zwei geladene Akkus am Gerät sowie ein Ersatzakku mitzuführen.", "Beim Umlagern: Systemcontroller gesichert, niemals Zug an der Driveline Austrittsstelle.", "OP-Transfer: zusätzlich Wagen mit Konsole, Bildschirm und Netzgerät mitführen.", "Ohne VADK: die/der transportierende Ärztin/Arzt ist in allen Belangen für das VAD verantwortlich."] },
+        { h: "Mobilisation und Lagerung" },
+        { ul: ["Frühmobilisation anstreben; erstes Aufsetzen ins Querbett im Beisein einer/eines VADK.", "Vorher ausreichender Volumenstatus (orthostatische Synkopen → Ansaugen des VAD).", "Netzkabel und Driveline nicht diskonnektieren, verdrehen oder knicken.", "Bei VAD Fehlfunktionen oder Kreislaufdefiziten Mobilisation abbrechen.", "Netzbetrieb möglich; bei Mobilisation „gehen“ auf Akkubetrieb umstellen."] }
+      ] },
+      { t: "Sonstiges · Exitus", blocks: [
+        { h: "Sonstige Informationen" },
+        { ul: ["Driveline oder Anschlüsse beschädigt → VADK umgehend verständigen.", "Sturz des Systemcontrollers → VADK umgehend verständigen.", "Veränderungen der Pumpenfunktion (Stromaufnahme, Pumpenindex, etc.), Geräusche → Ärztin/Arzt 13H3.", "Smartphones, Tablets, Computer: Mindestabstand 10cm zum Systemcontroller.", "Keine Magnetresonanz Tomographie und Stoßwellentherapie möglich.", "Therapeutische Ultraschallenergiepegel meiden.", "Keine Verfahren mit Hochspannungsgeräten (z.B. Diathermie).", "Keine Mehrfachsteckdosen verwenden.", "Gerinnungsmanagement: partielle Thromboplastinzeit, Thrombinzeit, Hämatokrit, freies Hämoglobin und Lactatdehydrogenase (Thrombenbildung).", "Thoraxdrainagen nach AAO ehest möglich entfernen.", "Bei Schrittmacherimplantationen kann es nötig sein, das VAD intraoperativ mit Akkus zu versorgen.", "Driveline-Verband: keine Lösungsmittel, Desinfektionsmittel, Wundbenzin, Salben (Kortison, Antimycotika, Jod oder Antibiotika).", "Weitere Informationen: AKH Netzlaufwerk J:/Kunstherz"] },
+        { h: "Todesfall" },
+        { ul: ["Im Falle eines Exitus ist es nötig das VAD abzuschalten; VAD mit allen Komponenten auf Station lagern, wird von VADK abgeholt.", "VADK bei terminalen Patient:innen wenn möglich zum Sterbeprozess und Abschalten hinzuziehen."] },
+        { h: "Abschalten HeartWare® HVAD" },
+        { p: "Weiße Driveline Abdeckung entfernen. Driveline Sicherungsring aufschrauben und die Driveline vom Systemcontroller abziehen. Am Bildschirm des Systemcontrollers erscheint „VAD gestoppt“. Es ertönt nach 10 Sekunden ein akustischer und optischer Alarm. Der Controller kann nun mittels drücken und halten der „Stummschaltetaste“ und der Bildlauftaste (⇑) solange bis ein Piepton ertönt ausgeschalten werden. Beide Stromquellen vom Systemcontroller trennen. Die Steuereinheit ist nun abgeschaltet. Das VAD kann auch über den Systemmonitor abgeschaltet werden. Passwort: 68773" },
+        { h: "Abschalten HeartMate III®" },
+        { p: "Driveline Sicherungslasche an der Rückseite des Systemcontrollers entriegeln. Driveline vom Systemcontroller abziehen. Am Display erscheint „Steuerleitung anschließen“. Das sonst grüne Pumpensymbol erlischt und es ertönt ein Alarmton. Nun beide Stromversorgunsquellen entfernen. Das Gerät wird jetzt vom integrierten 11V-Lithiumionen-Akku betrieben. Durch Drücken der Anzeigetaste wird der Systemcontroller in den Standby-Modus versetzt." }
+      ] }
+    ], pdf: "pdfs/vad-ventricular-assist-devices.pdf" }
+  ],
+  forms: [
+    { id: "hkein", t: "HK-Einberufung Tagesklinik 14J", pdf: "pdfs/hk-einberufung-14j.pdf", info: [
+      "Aufnahme 7:00 Uhr NÜCHTERN, Medikamente für den Tag, Hausschuhe, E-Card, Ausweis",
+      "Anmeldung Leitstelle 14G (roter Bettenturm bei den Aufzügen)",
+      "Befunde max. 2 Wochen alt: Blutbild, Blutchemie, Gerinnung (PTT, PTZ, INR, TZ, Fibrinogen), Hepatitisserologie, TSH, HbA1c, Blutgruppe, Thoraxröntgen",
+      "Unterschriebene Einverständniserklärung",
+      "Terminänderung: [[66350]] · Tagesklinik [[46300]] · Fax [[46290]]"] },
+    { id: "petct", t: "PET-CT Zuweisung", pdf: "pdfs/pet-ct-zuweisung.pdf", info: [
+      "Fax [[55520]] (Nuklearmedizin Leitstelle 3L) oder POST_AKH_LS_3L_PET@akhwien.at",
+      "Fragen: PET/CT Leitstelle [[55515]]",
+      "Pat. mind. 6 h nüchtern, gut hydriert (zucker- und kohlensäurefrei)",
+      "Schwangere/Stillende: unbedingt Rücksprache"] },
+    { id: "nuk", t: "Szintigrafie-Zuweisung (NUK)", pdf: "pdfs/zuweisung-szintigrafie.pdf", info: [
+      "Szintigrafie-Ambulanz Tel [[55510]] · Fax [[55520]]",
+      "Angeben: Größe, Gewicht, Serum-Kreatinin, TSH, letztes Röntgenkontrastmittel"] },
+    { id: "praeanae", t: "Präanästhesie-Zuweisung", pdf: "pdfs/praeanaesthesie-zuweisung.pdf", info: [
+      "Fax [[41650]]"] }
+  ]
+};
+
+const PHONES = {"entries": [{"n": "Anästhesie Suchtstelle", "nums": [{"v": "41880"}, {"v": "41660"}], "note": "", "c": "Chirurgie & OP", "s": "Anästhesie & Schmerz"}, {"n": "Präanästhesie HTG / Prä-Anästhesie HTG Arzt", "nums": [{"v": "81-6211"}], "note": "", "c": "Chirurgie & OP", "s": "Anästhesie & Schmerz"}, {"n": "Schmerzambulanz", "nums": [{"v": "41660", "l": "Prä-Anästhesie 9i"}, {"v": "64160"}, {"v": "64210"}], "note": "", "c": "Chirurgie & OP", "s": "Anästhesie & Schmerz"}, {"n": "Chir. Ambulanz Leitstelle 7C", "nums": [{"v": "69000"}, {"v": "69010"}, {"v": "69030"}], "note": "", "c": "Chirurgie & OP", "s": "Chirurgie"}, {"n": "Gefäßchirurgie – Ambulanz Terminvergabe", "nums": [{"v": "64920"}], "note": "", "c": "Chirurgie & OP", "s": "Chirurgie"}, {"n": "Neurochirurgie Auskunft", "nums": [{"v": "45830"}], "note": "", "c": "Chirurgie & OP", "s": "Chirurgie"}, {"n": "Plastische Chirurgie", "nums": [{"v": "69060"}, {"v": "69800", "l": "Konsilanmeldung"}], "note": "", "c": "Chirurgie & OP", "s": "Chirurgie"}, {"n": "Dr. Coti", "nums": [{"v": "81-5224"}], "note": "", "c": "Chirurgie & OP", "s": "Herz-, Thorax- & Transplantchirurgie"}, {"n": "Dr. Mahr", "nums": [{"v": "81-4217"}], "note": "", "c": "Chirurgie & OP", "s": "Herz-, Thorax- & Transplantchirurgie"}, {"n": "Ebenberger", "nums": [{"v": "81-5905"}], "note": "", "c": "Chirurgie & OP", "s": "Herz-, Thorax- & Transplantchirurgie"}, {"n": "HTX Prätransplant Koordinator", "nums": [{"v": "81-4209"}], "note": "", "c": "Chirurgie & OP", "s": "Herz-, Thorax- & Transplantchirurgie"}, {"n": "Thoraxchirurgie", "nums": [{"v": "81-4260"}], "note": "", "c": "Chirurgie & OP", "s": "Herz-, Thorax- & Transplantchirurgie"}, {"n": "Transplantkoordinator", "nums": [{"v": "81-4000"}], "note": "", "c": "Chirurgie & OP", "s": "Herz-, Thorax- & Transplantchirurgie"}, {"n": "Transplantkoordinatorenzimmer", "nums": [{"v": "40000"}, {"v": "67380"}, {"v": "67390"}], "note": "", "c": "Chirurgie & OP", "s": "Herz-, Thorax- & Transplantchirurgie"}, {"n": "Chir. Eingriffsraum", "nums": [{"v": "67850"}, {"v": "67840", "l": "Herzchirurgie Ambulanz 7C"}], "note": "", "c": "Chirurgie & OP", "s": "OP & Eingriffsräume"}, {"n": "Herz-Thorax-Eingriffsraum", "nums": [{"v": "54500"}], "note": "", "c": "Chirurgie & OP", "s": "OP & Eingriffsräume"}, {"n": "Herzchirurgie Eingriffsraum", "nums": [{"v": "69070"}], "note": "", "c": "Chirurgie & OP", "s": "OP & Eingriffsräume", "a": "Thoraxchirurgie 7C"}, {"n": "Kieferchirurgie Eingriffsraum", "nums": [{"v": "74520"}, {"v": "42690", "l": "Leitstelle"}], "note": "", "c": "Chirurgie & OP", "s": "OP & Eingriffsräume"}, {"n": "OP-Gruppe 2 – Leitstelle / OP-Gruppe 2 (wer zuständig?)", "nums": [{"v": "52620"}], "note": "", "c": "Chirurgie & OP", "s": "OP & Eingriffsräume", "a": "OP-Gruppe II (Thorax)"}, {"n": "OP-Gruppe I (Gyn, Herz-Thorax-Gefäß, Uro, Kinder, Allgemein)", "nums": [{"v": "56640"}], "note": "", "c": "Chirurgie & OP", "s": "OP & Eingriffsräume"}, {"n": "OP-Gruppe III (MKG, Derma, HNO, Plastik)", "nums": [{"v": "56660"}], "note": "", "c": "Chirurgie & OP", "s": "OP & Eingriffsräume"}, {"n": "OP-Gruppe IV (Augen, Ortho)", "nums": [{"v": "54200"}], "note": "", "c": "Chirurgie & OP", "s": "OP & Eingriffsräume"}, {"n": "OP-Gruppe V (Akutop, Transplant, Allgemein)", "nums": [{"v": "54320"}], "note": "", "c": "Chirurgie & OP", "s": "OP & Eingriffsräume"}, {"n": "18i Handy weiß (Ärzte) / 18i Arztzimmer", "nums": [{"v": "44720"}], "note": "", "c": "Hämato & Onko", "s": "Hämatologie"}, {"n": "18i Nachtdienstzimmer", "nums": [{"v": "44730"}], "note": "", "c": "Hämato & Onko", "s": "Hämatologie"}, {"n": "18i Station", "nums": [{"v": "44740", "l": "Hämatologie – Station / Schnurlostel. Ärzte 18I"}, {"v": "44750", "l": "Fax"}], "note": "", "c": "Hämato & Onko", "s": "Hämatologie", "a": "Hämatologie – Station 18i / Fax 18i"}, {"n": "6i Blutabnahme", "nums": [{"v": "44590"}], "note": "", "c": "Hämato & Onko", "s": "Hämatologie"}, {"n": "6i Therapieraum", "nums": [{"v": "63940"}], "note": "", "c": "Hämato & Onko", "s": "Hämatologie", "a": "Therapieraum Onko 6F"}, {"n": "Fax 6i / 6i Leitstellen Fax", "nums": [{"v": "44610"}], "note": "", "c": "Hämato & Onko", "s": "Hämatologie"}, {"n": "Häma Ambulanz Mappen", "nums": [{"v": "44600"}], "note": "", "c": "Hämato & Onko", "s": "Hämatologie"}, {"n": "Häma Blutabnahme", "nums": [{"v": "44580"}], "note": "", "c": "Hämato & Onko", "s": "Hämatologie"}, {"n": "Häma-TK 18J", "nums": [{"v": "44690"}, {"v": "44700", "l": "18J Station"}], "note": "", "c": "Hämato & Onko", "s": "Hämatologie"}, {"n": "Hämatologie – Gerinnungsambulanz", "nums": [{"v": "47970"}, {"v": "44970"}], "note": "", "c": "Hämato & Onko", "s": "Hämatologie"}, {"n": "Hämatologie – Station 18i Ärztetelefon / 18i Telefon schwarz (Ärzte)", "nums": [{"v": "43990"}], "note": "", "c": "Hämato & Onko", "s": "Hämatologie"}, {"n": "KMT - Vorstellung Kahls / KMT-Ambulanz", "nums": [{"v": "25400"}], "note": "", "c": "Hämato & Onko", "s": "KMT"}, {"n": "KMT 21j", "nums": [{"v": "27080"}], "note": "", "c": "Hämato & Onko", "s": "KMT"}, {"n": "KMT Besprechung Fax", "nums": [{"v": "73405"}], "note": "", "c": "Hämato & Onko", "s": "KMT", "a": "Auswärtige HLA Befunde"}, {"n": "KMT Station", "nums": [{"v": "57000"}, {"v": "57020"}], "note": "", "c": "Hämato & Onko", "s": "KMT"}, {"n": "6i Onko", "nums": [{"v": "44660", "l": "Onko-Ambulanz"}, {"v": "48600"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Gyn-Onko", "nums": [{"v": "29030"}, {"v": "29200", "l": "Gynäkologie"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Onko Amb Gelb A", "nums": [{"v": "44210"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Onko Amb Gelb B", "nums": [{"v": "44250"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Onko Amb Gelb C (Prager)", "nums": [{"v": "44240"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Onko Amb Gelb D (Steger)", "nums": [{"v": "44260"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Onko Amb Gelb E (Sagaster)", "nums": [{"v": "46840"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Onko Amb Gelb F (Schmidinger)", "nums": [{"v": "44220"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Onko Amb Gelb G (Mamma)", "nums": [{"v": "44230"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Onko Amb Gelb H", "nums": [{"v": "43290"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Onko Amb Gelb I (Agis, Raderer)", "nums": [{"v": "44270"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Onko-Sekretariat", "nums": [{"v": "44450"}, {"v": "44290"}, {"v": "44570"}, {"v": "60830"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Photopherese", "nums": [{"v": "78070"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Psychologe Onko", "nums": [{"v": "81-2259"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Sectio OP", "nums": [{"v": "29130"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Tumorboard-Anmeldung", "nums": [{"v": "20880"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Zytoapotheke", "nums": [{"v": "15830"}, {"v": "15350"}], "note": "", "c": "Hämato & Onko", "s": "Onkologie"}, {"n": "Landertinger-Ch. Lena", "nums": [{"v": "81-2275"}], "note": "", "c": "Hämato & Onko", "s": "Psychologie"}, {"n": "Schranz Sandra", "nums": [{"v": "81-2272"}], "note": "", "c": "Hämato & Onko", "s": "Psychologie"}, {"n": "Adamidis Feroniki", "nums": [{"v": "81-2283"}, {"v": "22839", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Agis Hermine", "nums": [{"v": "81-2267"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Ay Cihan", "nums": [{"v": "81-2098"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Bahrs Christina", "nums": [{"v": "81-2111"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Bartsch Rupert", "nums": [{"v": "81-2253"}, {"v": "22539", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Bergen Elisabeth", "nums": [{"v": "81-2529"}, {"v": "25299", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Berger Julia Maria", "nums": [{"v": "81-2517"}, {"v": "25179", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Berghoff Anna Sophie", "nums": [{"v": "81-2264"}, {"v": "22649", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Brodowicz Thomas", "nums": [{"v": "81-2266"}, {"v": "22669", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Buchtele Nina", "nums": [{"v": "81-2256"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Bumberger Armin", "nums": [{"v": "81-2100"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Bär Joachim", "nums": [{"v": "81-2176"}, {"v": "21769", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Degenfeld-Schonburg Lina", "nums": [{"v": "81-2252"}, {"v": "22529", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Dominik Nina", "nums": [{"v": "81-2206"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Ecker Franziska", "nums": [{"v": "81-2508"}, {"v": "25089", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Eichinger-Hasenauer Sabine", "nums": [{"v": "81-2505"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Eischer Lisbeth", "nums": [{"v": "81-2209"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Friedrich Alexander", "nums": [{"v": "81-2233"}, {"v": "22339", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Füreder Thorsten", "nums": [{"v": "81-2212"}, {"v": "22129", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Füreder Wolfgang", "nums": [{"v": "81-2520"}, {"v": "25209", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Gaiger Alexander", "nums": [{"v": "81-2290"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Gatterer Christian", "nums": [{"v": "81-2649"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Gebhart Johanna", "nums": [{"v": "81-2103"}, {"v": "21039", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Gelbenegger Georg", "nums": [{"v": "81-2087"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Gleixner Karoline", "nums": [{"v": "81-2545"}, {"v": "25459", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Harrison Nicole", "nums": [{"v": "81-2269"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Hauswirth Alexander", "nums": [{"v": "81-2546"}, {"v": "25469", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Hermann Alexander", "nums": [{"v": "81-2501"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Ilhan-Mutlu Aysegül", "nums": [{"v": "81-2119"}, {"v": "21199", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Jakobljevich", "nums": [{"v": "81-2514"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Jeryczynski Georg", "nums": [{"v": "81-2650"}, {"v": "26509", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "John Max", "nums": [{"v": "81-2232"}, {"v": "22329", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Kazianka Lukas", "nums": [{"v": "81-2297"}, {"v": "22979", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Kleinberger Markus", "nums": [{"v": "81-2255"}, {"v": "22559", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Knapp Sylvia", "nums": [{"v": "81-2651"}, {"v": "51390"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Knaus Hanna", "nums": [{"v": "81-2647"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Kornfehl Andrea", "nums": [{"v": "81-2527"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Kraemmer Daniel", "nums": [{"v": "81-2205"}, {"v": "22059", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Krainer Michael", "nums": [{"v": "81-2525"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Krauth Maria", "nums": [{"v": "81-2261"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Kum Lea", "nums": [{"v": "81-2284"}, {"v": "22849", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Kussmann Manuel", "nums": [{"v": "81-2503"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Königsbrügge Oliver", "nums": [{"v": "81-2536"}, {"v": "25369", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Lagler Heimo", "nums": [{"v": "81-2518"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Lamm Wolfgang", "nums": [{"v": "81-2099"}, {"v": "20999", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Leutzendorf Amelie", "nums": [{"v": "81-1486"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Mair Maximilian", "nums": [{"v": "81-2017"}, {"v": "20179", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Marhold Maximilian", "nums": [{"v": "81-2541"}, {"v": "25419", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Mehic Dino", "nums": [{"v": "81-2230"}, {"v": "22309", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Melhorn Philipp", "nums": [{"v": "81-2534"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Minichsdorfer Christoph", "nums": [{"v": "81-2280"}, {"v": "22809", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Mitterbauer Margit", "nums": [{"v": "81-2279"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Nagler Bernhard", "nums": [{"v": "81-2510"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Parschalk Bernhard", "nums": [{"v": "81-8442"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Popov Petar", "nums": [{"v": "81-2302"}, {"v": "23029", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Porpaczy Edit", "nums": [{"v": "81-2271"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Prager Gerald", "nums": [{"v": "81-2268"}, {"v": "22689", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Prager Marlene", "nums": [{"v": "81-2522"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Puhr Hannah", "nums": [{"v": "81-2539"}, {"v": "25399", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Rabitsch Werner", "nums": [{"v": "81-2273"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Raderer Markus", "nums": [{"v": "81-2542"}, {"v": "25429", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Riedl Julia", "nums": [{"v": "81-2210"}, {"v": "22109", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Robak Oliver", "nums": [{"v": "81-2524"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Rüsing Lina", "nums": [{"v": "81-2516"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Schellongowski Peter", "nums": [{"v": "81-2211"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Schlögl Elisabeth", "nums": [{"v": "81-2523"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Schubert Lorenz", "nums": [{"v": "81-2652"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Schulenburg Axel", "nums": [{"v": "81-2270"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Schörgenhofer Christian", "nums": [{"v": "81-2088"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Sillaber Christian", "nums": [{"v": "81-2528"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Sperr Wolfgang", "nums": [{"v": "81-2533"}, {"v": "25339", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Staudinger Thomas", "nums": [{"v": "81-2535"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Steger Günther", "nums": [{"v": "81-2502"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Steinbrecher Oskar", "nums": [{"v": "81-2265"}, {"v": "22659", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Steindl Ariane", "nums": [{"v": "81-2281"}, {"v": "22819", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Steiner Daniel", "nums": [{"v": "81-2214"}, {"v": "22149", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Steininger Christoph", "nums": [{"v": "81-2540"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Sunder-Plassmann Vincent", "nums": [{"v": "81-2511", "l": "Angelika Starzer"}, {"v": "25119", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Thaler Johannes", "nums": [{"v": "81-2257"}, {"v": "22579", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Thalhammer Florian", "nums": [{"v": "81-2521"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Thallinger Christiane", "nums": [{"v": "81-2277"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Tobudic Selma", "nums": [{"v": "81-2504"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Traby Ludwig", "nums": [{"v": "81-2250"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Valent Peter", "nums": [{"v": "81-2531"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Veletzky Luzia", "nums": [{"v": "81-2240"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Vladic Nikola", "nums": [{"v": "81-2248"}, {"v": "22489", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Vospernik Lea", "nums": [{"v": "81-2113"}, {"v": "21139", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Vossen Matthias", "nums": [{"v": "81-2263"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Weber Robert", "nums": [{"v": "81-2241"}, {"v": "22419", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Werle Maria", "nums": [{"v": "81-5449"}, {"v": "54499", "l": "DECT"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Wilfing Raphael", "nums": [{"v": "81-2231"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Winkler Stefan", "nums": [{"v": "81-2537"}], "note": "", "c": "Hämato & Onko", "s": "Ärzt:innen"}, {"n": "Angiologie 17J", "nums": [{"v": "46470"}, {"v": "46490", "l": "17 J STLP Klaudia Obermaier"}], "note": "", "c": "Innere Medizin", "s": "Angiologie"}, {"n": "Angiologie – Fax - Sekretariat", "nums": [{"v": "46650"}], "note": "", "c": "Innere Medizin", "s": "Angiologie"}, {"n": "Angiologie – Jour-Arzt", "nums": [{"v": "81-2129"}], "note": "", "c": "Innere Medizin", "s": "Angiologie"}, {"n": "Angiologie – OSZI", "nums": [{"v": "46580"}, {"v": "46540"}], "note": "", "c": "Innere Medizin", "s": "Angiologie"}, {"n": "Angiologie – Schreibstube 17J", "nums": [{"v": "57170"}], "note": "", "c": "Innere Medizin", "s": "Angiologie", "a": "Leitstelle 17"}, {"n": "Angiologie – Therapieraum", "nums": [{"v": "46640"}], "note": "", "c": "Innere Medizin", "s": "Angiologie"}, {"n": "Angiosekretariat", "nums": [{"v": "46710", "l": "Angiologie – Sekretariat"}, {"v": "46540"}], "note": "", "c": "Innere Medizin", "s": "Angiologie"}, {"n": "Christoph Kopp", "nums": [{"v": "81-2464"}], "note": "", "c": "Innere Medizin", "s": "Angiologie"}, {"n": "Daniela Seidinger", "nums": [{"v": "81-2491"}], "note": "", "c": "Innere Medizin", "s": "Angiologie"}, {"n": "Duplex 19K", "nums": [{"v": "48650"}], "note": "", "c": "Innere Medizin", "s": "Angiologie"}, {"n": "Duplex Derma TVT", "nums": [{"v": "77500"}, {"v": "61225"}], "note": "", "c": "Innere Medizin", "s": "Angiologie"}, {"n": "Helena Böhmig", "nums": [{"v": "63020"}, {"v": "81-2219"}], "note": "", "c": "Innere Medizin", "s": "Angiologie"}, {"n": "Patricia Wadowski", "nums": [{"v": "81-7751"}], "note": "", "c": "Innere Medizin", "s": "Angiologie"}, {"n": "Pesau Gerfried", "nums": [{"v": "81-2154"}], "note": "", "c": "Innere Medizin", "s": "Angiologie"}, {"n": "20J (Endo)", "nums": [{"v": "43740", "l": "20J / Endokrinologie – Station"}, {"v": "43750"}], "note": "", "c": "Innere Medizin", "s": "Endokrinologie"}, {"n": "6J Leitstelle", "nums": [{"v": "43462", "l": "6J Endo (geheim)"}, {"v": "42170", "l": "Nephro-Amb 6J"}], "note": "", "c": "Innere Medizin", "s": "Endokrinologie"}, {"n": "Diabetesambulanz", "nums": [{"v": "43140"}, {"v": "43462"}], "note": "", "c": "Innere Medizin", "s": "Endokrinologie"}, {"n": "Endokrinologie Ambulanz Leitstelle 6J", "nums": [{"v": "43460"}, {"v": "43180", "l": "Termine Diabetes"}, {"v": "60950", "l": "Termine Diabetes"}], "note": "", "c": "Innere Medizin", "s": "Endokrinologie"}, {"n": "Endokrinologie – Endo Ambulanz", "nums": [{"v": "43460"}, {"v": "43140"}], "note": "", "c": "Innere Medizin", "s": "Endokrinologie"}, {"n": "Schilddrüsenambulanz", "nums": [{"v": "43160"}], "note": "", "c": "Innere Medizin", "s": "Endokrinologie"}, {"n": "7I Leitstelle", "nums": [{"v": "47785"}, {"v": "47780"}], "note": "", "c": "Innere Medizin", "s": "Gastro & Endoskopie"}, {"n": "Endoskopie 7i", "nums": [{"v": "47780"}, {"v": "47295", "l": "intern"}, {"v": "47330", "l": "intern"}], "note": "", "c": "Innere Medizin", "s": "Gastro & Endoskopie", "a": "Gastroskopie (7i)"}, {"n": "ERCP (7i)", "nums": [{"v": "47310"}], "note": "", "c": "Innere Medizin", "s": "Gastro & Endoskopie"}, {"n": "Funktionsdiagnostik (Calprotectin/Stuhl)", "nums": [{"v": "47300"}], "note": "", "c": "Innere Medizin", "s": "Gastro & Endoskopie"}, {"n": "Gastroenterologie – Ambulanz", "nums": [{"v": "47500", "l": "Crohn-Amb"}, {"v": "47480"}, {"v": "47780", "l": "Termine Endoskopie"}, {"v": "47295", "l": "ERCP-Geheimnummer / Gastro Ambulanz"}], "note": "", "c": "Innere Medizin", "s": "Gastro & Endoskopie", "a": "Colo Anmeldung / PEG-Sonde / Gastro Leitstelle 7i"}, {"n": "Gastroenterologie – ERCP", "nums": [{"v": "47295"}, {"v": "81-6444", "l": "Chef"}], "note": "", "c": "Innere Medizin", "s": "Gastro & Endoskopie", "a": "Endoskopie akut Pager / Gastro Chef vom Dienst / Endoskopie (Chef vom Tag)"}, {"n": "Gastroenterologie – Koloskopie / Coloskopie (7i)", "nums": [{"v": "47380"}], "note": "", "c": "Innere Medizin", "s": "Gastro & Endoskopie"}, {"n": "Immuntherapie Gastro", "nums": [{"v": "15350"}, {"v": "15340"}], "note": "", "c": "Innere Medizin", "s": "Gastro & Endoskopie"}, {"n": "16J Infekt", "nums": [{"v": "44850", "l": "Station"}, {"v": "44830"}, {"v": "44835"}, {"v": "44840"}, {"v": "44860", "l": "Fax"}], "note": "Zimmer hinten: 44830/44835/44840", "c": "Innere Medizin", "s": "Infektiologie"}, {"n": "Infektambulanz", "nums": [{"v": "44650"}], "note": "", "c": "Innere Medizin", "s": "Infektiologie"}, {"n": "Infektiologie – Parasitologie", "nums": [{"v": "40160 38270"}], "note": "", "c": "Innere Medizin", "s": "Infektiologie"}, {"n": "20H (Nephro)", "nums": [{"v": "43170"}, {"v": "43690"}], "note": "", "c": "Innere Medizin", "s": "Nephrologie & Dialyse"}, {"n": "20I (Nephro)", "nums": [{"v": "43770"}], "note": "", "c": "Innere Medizin", "s": "Nephrologie & Dialyse"}, {"n": "Chron. Dialyse", "nums": [{"v": "39300"}, {"v": "39310"}, {"v": "39320", "l": "chronische Dialyse 2"}], "note": "", "c": "Innere Medizin", "s": "Nephrologie & Dialyse"}, {"n": "Peritonealdialyse", "nums": [{"v": "68130"}], "note": "", "c": "Innere Medizin", "s": "Nephrologie & Dialyse"}, {"n": "Bronchoskopie (Pulmo)", "nums": [{"v": "47770"}, {"v": "47780"}], "note": "", "c": "Innere Medizin", "s": "Pulmologie"}, {"n": "Christina Bal", "nums": [{"v": "81-4773"}], "note": "", "c": "Innere Medizin", "s": "Pulmologie"}, {"n": "Gompelmann", "nums": [{"v": "81-4955"}], "note": "", "c": "Innere Medizin", "s": "Pulmologie"}, {"n": "Lufu (Chirurgie)", "nums": [{"v": "67830"}], "note": "", "c": "Innere Medizin", "s": "Pulmologie"}, {"n": "Lungentransplant-Koordinatorenzimmer (LuTx)", "nums": [{"v": "69470"}], "note": "", "c": "Innere Medizin", "s": "Pulmologie"}, {"n": "Pulmologie – 19H", "nums": [{"v": "47810"}, {"v": "47070"}], "note": "", "c": "Innere Medizin", "s": "Pulmologie"}, {"n": "Pulmologie – Ambulanz", "nums": [{"v": "61410"}, {"v": "47715"}], "note": "", "c": "Innere Medizin", "s": "Pulmologie"}, {"n": "Pulmologie – Lungenfunktion / LuFu", "nums": [{"v": "47700"}], "note": "", "c": "Innere Medizin", "s": "Pulmologie"}, {"n": "20K (Rheuma)", "nums": [{"v": "43840"}, {"v": "43080"}], "note": "", "c": "Innere Medizin", "s": "Rheumatologie"}, {"n": "Rheuma-Amb (6J)", "nums": [{"v": "46760"}], "note": "", "c": "Innere Medizin", "s": "Rheumatologie"}, {"n": "13B1", "nums": [{"v": "68400"}, {"v": "49420", "l": "Fax"}], "note": "Grün", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "13B2 (HTG)", "nums": [{"v": "64100"}, {"v": "48420", "l": "Fax"}], "note": "Grün", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "13B3 (Kiefer)", "nums": [{"v": "41850"}, {"v": "41860", "l": "Fax"}], "note": "Grün", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "13C1", "nums": [{"v": "68220"}, {"v": "68250", "l": "Fax"}], "note": "Grün", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "13C2", "nums": [{"v": "41800"}, {"v": "41830", "l": "Fax"}], "note": "Grün", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "13C3", "nums": [{"v": "41740"}, {"v": "41750", "l": "Fax"}], "note": "Grün", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "13H1", "nums": [{"v": "47670"}, {"v": "27650"}, {"v": "47970", "l": "Fax"}], "note": "ROT", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "13H2 (Apharese)", "nums": [{"v": "44950"}, {"v": "57330", "l": "Fax"}], "note": "ROT", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "13H3", "nums": [{"v": "46430"}, {"v": "46440", "l": "13H3 STLP Karin Hatzinger"}], "note": "", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "13H3 (Cardiolog.)", "nums": [{"v": "46440"}, {"v": "49110"}], "note": "ROT", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "13I1 (Verbrennung)", "nums": [{"v": "68600"}, {"v": "68620", "l": "Fax"}], "note": "ROT", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "13I2", "nums": [{"v": "44900"}, {"v": "44910"}, {"v": "49420"}, {"v": "44980", "l": "Fax"}], "note": "ROT", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "13i2 Arztzimmer", "nums": [{"v": "44920", "l": "13i2 (ZVK)"}, {"v": "44900"}], "note": "", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "13i2 Türcode", "nums": [], "note": "Türcode: 4491, 1392", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "13I3 (Akutdialyse)", "nums": [{"v": "43870"}, {"v": "43860", "l": "Fax"}, {"v": "43890", "l": "tel. Ärzte"}, {"v": "43880", "l": "13I3 Akutdialyse"}], "note": "ROT", "c": "Intensiv & Notfall", "s": "Intensivstationen", "a": "Akutdialyse 13i3"}, {"n": "9D", "nums": [{"v": "68800"}, {"v": "68820", "l": "Fax"}], "note": "Grün", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "Chir. Intensiv Station", "nums": [{"v": "56130"}], "note": "", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "Chr. Dial. 1", "nums": [{"v": "73610"}], "note": "Südgarten", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "Chr. Dial. 2", "nums": [{"v": "73620"}], "note": "Südgarten", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "NCH E11", "nums": [{"v": "25820"}, {"v": "45980", "l": "Fax"}], "note": "Südgarten", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "PSY 4C", "nums": [{"v": "35450"}, {"v": "35400", "l": "Fax"}], "note": "Südgarten", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "Süd B", "nums": [{"v": "42420", "l": "4 SÜD Station"}, {"v": "42430", "l": "Fax"}], "note": "Südgarten", "c": "Intensiv & Notfall", "s": "Intensivstationen"}, {"n": "Anästhesie – Intensivkoordinator / ICU-Koordinator Grüner Turm", "nums": [{"v": "81-4802"}], "note": "Grün", "c": "Intensiv & Notfall", "s": "Koordination & Notfall"}, {"n": "ICU Koordinator", "nums": [{"v": "81-4488"}, {"v": "81-5660", "l": "Intensivkoordinator / ICU-Koordinator Roter Turm"}], "note": "", "c": "Intensiv & Notfall", "s": "Koordination & Notfall"}, {"n": "Notfall Leitstelle 6D", "nums": [{"v": "19640"}, {"v": "39640"}], "note": "", "c": "Intensiv & Notfall", "s": "Koordination & Notfall"}, {"n": "Notfall Oberarzt Telefon", "nums": [{"v": "76600"}], "note": "", "c": "Intensiv & Notfall", "s": "Koordination & Notfall"}, {"n": "Schockraum", "nums": [{"v": "59500"}, {"v": "59530"}], "note": "", "c": "Intensiv & Notfall", "s": "Koordination & Notfall"}, {"n": "Unfallambulanz", "nums": [{"v": "59400"}], "note": "", "c": "Intensiv & Notfall", "s": "Koordination & Notfall", "a": "Unfallchirurgie"}, {"n": "6L Leitstelle", "nums": [{"v": "46230"}, {"v": "61350", "l": "Pulmologie Ambulanz"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Ambulanz für angeb. Vitien", "nums": [{"v": "46400"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Angiologie Ambulanz", "nums": [{"v": "43450"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen", "a": "Angio Amb Leitstelle 6J / Angiologie – Leitstelle"}, {"n": "Blutabnahme Grün B 6 I", "nums": [{"v": "62700"}, {"v": "62690"}, {"v": "81-2417"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Brezanac Adila", "nums": [{"v": "46160"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen", "a": "Adila/Julia"}, {"n": "Burda Mateo / Alajbegovic Leila", "nums": [{"v": "62160", "l": "PPH-Ambulanz"}, {"v": "81-2890"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "CV-V-Mittelzimmer", "nums": [{"v": "62950"}, {"v": "62801", "l": "Fax"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Defi-Ambulanz (Lila F/E)", "nums": [{"v": "62810", "l": "Lila F"}, {"v": "46220", "l": "Lila E"}, {"v": "62970", "l": "Fax"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Echo", "nums": [{"v": "46820"}, {"v": "46070"}, {"v": "22080", "l": "Fax"}], "note": "Gegensprechanlage: 2107", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Echolabor (Lila B/C/H)", "nums": [{"v": "49130", "l": "Lila B"}, {"v": "81-2446"}, {"v": "27440", "l": "Lila C"}, {"v": "46070", "l": "Lila H"}, {"v": "22080", "l": "Fax"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen", "a": "TEE"}, {"n": "EKG / 24-Std.-Blutdruckmessung", "nums": [{"v": "46280"}, {"v": "81-2431"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Ergometrie (Lila P)", "nums": [{"v": "62850"}, {"v": "62860"}, {"v": "81-2429"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "EU", "nums": [{"v": "62870", "l": "Kard. Erstuntersuchung"}, {"v": "48610", "l": "EU Fritz"}, {"v": "62800"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Herzecho", "nums": [{"v": "46820"}, {"v": "76070", "l": "Fax"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Herzinsuffizienz-Ambulanz / CMP-Amb", "nums": [{"v": "62780"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Kard-Szinti", "nums": [{"v": "46720"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Kardiologie Ambulanz", "nums": [{"v": "46230", "l": "Herzecho Leitstelle / Kard. Amb Leitstelle 6L"}, {"v": "46240", "l": "Fax"}, {"v": "163", "l": "KB Anlage"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Konferenzraum 6 J", "nums": [{"v": "62710"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Langzeit-EKG", "nums": [{"v": "46220"}, {"v": "46040"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Life-Vest Zoll", "nums": [{"v": "06644306470"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "LZ-EKG (Lila O)", "nums": [{"v": "46040"}, {"v": "81-2428"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Pulmo-Amb Leitstelle 6L", "nums": [{"v": "61350"}, {"v": "47720"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Raum B", "nums": [{"v": "62740"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Raum C", "nums": [{"v": "62730"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Raum F", "nums": [{"v": "62720"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Raum G – Prof. Bergler-Klein", "nums": [{"v": "62750"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Rhythmusambulanz", "nums": [{"v": "61351"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Schrittmacher (Lila N)", "nums": [{"v": "62880"}, {"v": "63500", "l": "Fax"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Schrittmacheranmeldung", "nums": [{"v": "69690"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "Schwester Anna Ambulanz / Ana/Elisabeth Stationshilfe", "nums": [{"v": "81-2318"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen"}, {"n": "TTE", "nums": [{"v": "46820", "l": "Herzecho / Kling Silvia (Lila G)"}, {"v": "46821", "l": "Akut"}, {"v": "81-2490", "l": "Gangl"}], "note": "", "c": "Kardiologie", "s": "Ambulanzen", "a": "Herzecho Termin"}, {"n": "Herzalarm", "nums": [{"v": "1112"}], "note": "", "c": "Kardiologie", "s": "Dienste & Pager"}, {"n": "HK-Dienst / HK-Senior", "nums": [{"v": "24230"}, {"v": "81-2422", "l": "Interventionsdienst"}], "note": "", "c": "Kardiologie", "s": "Dienste & Pager", "a": "HK Senior / Herzkatheter Senior"}, {"n": "Konsiliardienst / Kardiologisches Konsil", "nums": [{"v": "81-2600"}], "note": "", "c": "Kardiologie", "s": "Dienste & Pager", "a": "Kard-Konsil"}, {"n": "Stationsdienst", "nums": [{"v": "81-2421"}], "note": "", "c": "Kardiologie", "s": "Dienste & Pager", "a": "Pulmologie – Funktionspager"}, {"n": "VAD-Koordinator:in (Notruf)", "nums": [{"v": "22000"}], "note": "", "c": "Kardiologie", "s": "Dienste & Pager"}, {"n": "AG Gyöngyösi Gruppenpager", "nums": [{"v": "81-2314"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "AG Gyöngyösi Labors", "nums": [{"v": "48520"}, {"v": "46630"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "AG Lang Labors", "nums": [{"v": "73519 - 22"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "Brekalo Mira", "nums": [{"v": "81-3346"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "Forschungslabors", "nums": [{"v": "73515 - 18"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "Gössinger Bea (AG Lang)", "nums": [{"v": "81-7227"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "Hamidi Fardin (AG Gyöngyösi)", "nums": [{"v": "47040"}, {"v": "81-2316"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "Hoffmann", "nums": [{"v": "81-2497"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "Kokabi Vian / Erdogan Hümeyra (AG Bergler-Klein)", "nums": [{"v": "47040"}, {"v": "81-2106"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "Malainer Babette (AG Gyöngyösi) / AG Bergler-Klein", "nums": [{"v": "81-2489"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "Ondracek Anna (AG Lang)", "nums": [{"v": "81-2311"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "Panagoitides (AG Hülsmann)", "nums": [{"v": "81-6277"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "Panzenböck Adelheid (AG Lang)", "nums": [{"v": "73512"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "Seidl Veronika", "nums": [{"v": "73519"}, {"v": "81-2400"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "Weidenhammer (AG Hülsmann)", "nums": [{"v": "61043"}, {"v": "81-6276"}], "note": "", "c": "Kardiologie", "s": "Forschung"}, {"n": "Anmeldung für Besprechung / HK Termine", "nums": [{"v": "81-2425", "l": "Anmeldung HK/Herzchirurgenbesprechung"}, {"v": "66350"}], "note": "", "c": "Kardiologie", "s": "Herzkatheter", "a": "Herzkatheter Terminplanung"}, {"n": "Auswerteraum (Tel & Fax)", "nums": [{"v": "62840"}], "note": "", "c": "Kardiologie", "s": "Herzkatheter"}, {"n": "Herzkatheter / Anmeldung", "nums": [{"v": "46210", "l": "HK Gangtelefon"}, {"v": "46190", "l": "HK 1"}, {"v": "46200", "l": "HK 4"}], "note": "", "c": "Kardiologie", "s": "Herzkatheter"}, {"n": "HK 3", "nums": [{"v": "46080"}], "note": "", "c": "Kardiologie", "s": "Herzkatheter"}, {"n": "HK Konferenzraum", "nums": [{"v": "39201"}], "note": "", "c": "Kardiologie", "s": "Herzkatheter"}, {"n": "HK Koord.", "nums": [{"v": "66350", "l": "HK Termine Anmeldung / MTA HK"}, {"v": "24230"}], "note": "", "c": "Kardiologie", "s": "Herzkatheter"}, {"n": "HK Räume", "nums": [{"v": "46180", "l": "Ingrid"}, {"v": "46090", "l": "Schrankraum / Fr. Kadlecek"}, {"v": "46050", "l": "HK 2"}, {"v": "52266"}], "note": "", "c": "Kardiologie", "s": "Herzkatheter"}, {"n": "EDV Rehak Gerhard", "nums": [{"v": "46030"}], "note": "", "c": "Kardiologie", "s": "Sekretariat & Leitung"}, {"n": "Kaiser Silvia", "nums": [{"v": "46570"}, {"v": "81-2420"}], "note": "", "c": "Kardiologie", "s": "Sekretariat & Leitung"}, {"n": "Nina/Emina", "nums": [{"v": "43570"}, {"v": "42160", "l": "Fax"}], "note": "", "c": "Kardiologie", "s": "Sekretariat & Leitung"}, {"n": "Ob. Ass. El-Madani Nadja", "nums": [{"v": "78560"}, {"v": "81-3332"}], "note": "", "c": "Kardiologie", "s": "Sekretariat & Leitung"}, {"n": "Petz Eva-Maria, MBA", "nums": [{"v": "77120"}, {"v": "81-1199"}, {"v": "76960", "l": "Fax"}], "note": "", "c": "Kardiologie", "s": "Sekretariat & Leitung"}, {"n": "Ruzic Petra", "nums": [{"v": "46270"}, {"v": "81-2433"}], "note": "", "c": "Kardiologie", "s": "Sekretariat & Leitung"}, {"n": "Sabine/Silvia", "nums": [{"v": "62790"}], "note": "", "c": "Kardiologie", "s": "Sekretariat & Leitung"}, {"n": "Sekretariat", "nums": [{"v": "46140", "l": "Sabine"}, {"v": "46141"}], "note": "", "c": "Kardiologie", "s": "Sekretariat & Leitung"}, {"n": "Tarra Julia – Pulmo", "nums": [{"v": "46105"}, {"v": "81-2401"}], "note": "", "c": "Kardiologie", "s": "Sekretariat & Leitung"}, {"n": "14 J STLP Claudia Ulram", "nums": [{"v": "46310"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "19 H FBKP Raphaela Keppler", "nums": [{"v": "47800"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "19 I STLP Johanna Karner", "nums": [{"v": "46330"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "19 J STLP Elke Chloupek", "nums": [{"v": "46360"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "19I", "nums": [{"v": "46320"}, {"v": "55551"}, {"v": "55550", "l": "19 I Wohlfahrt Horst"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "19J", "nums": [{"v": "46350"}, {"v": "60610", "l": "19 J Ärztezimmer"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "Intensivstation 13H3", "nums": [{"v": "46430"}, {"v": "46730", "l": "Fax"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "kleiner Seminarraum", "nums": [{"v": "57295"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "Leitstelle 13", "nums": [{"v": "57130"}, {"v": "57330", "l": "Fax"}, {"v": "179", "l": "KB-Anlage"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "Leitstelle 19", "nums": [{"v": "57190", "l": "Angiologie – Schreibstube Amb."}, {"v": "57390", "l": "Fax"}, {"v": "185", "l": "KB-Anlage"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "Personalraum 6J", "nums": [{"v": "62820"}, {"v": "48630"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "Personalraum 6L + MTA", "nums": [{"v": "24590"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "Personalraum HK", "nums": [{"v": "62830"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "Psychologin Sigel Lorenz", "nums": [{"v": "73570"}, {"v": "81-7712"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "Psychologin Sigmund Rosemarie", "nums": [{"v": "73570"}, {"v": "81-7711"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "Station 17 J – Angiologie", "nums": [{"v": "46470"}, {"v": "46480", "l": "Fax"}], "note": "", "c": "Kardiologie", "s": "Stationen", "a": "19K / Angiologie – Fax - Station"}, {"n": "Station 19 H – Pulmologie", "nums": [{"v": "47810"}, {"v": "47820", "l": "Fax"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "Station 19 I", "nums": [{"v": "46320"}, {"v": "46340", "l": "Fax"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "Station 19 J", "nums": [{"v": "46350"}, {"v": "46370", "l": "Fax"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "Tagesklinik 14 J", "nums": [{"v": "46300", "l": "Tagesklinik 14J (ambulante Kardioversion)"}, {"v": "46290", "l": "Fax"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "TEE", "nums": [{"v": "62490"}], "note": "", "c": "Kardiologie", "s": "Stationen"}, {"n": "Anvari-Pirsch", "nums": [{"v": "81-2434"}, {"v": "49650"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Arfsten", "nums": [{"v": "81-2415"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Badr Eslam", "nums": [{"v": "81-2479"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Bartko", "nums": [{"v": "81-2441"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Baumer", "nums": [{"v": "81-9491"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Bergler-Klein", "nums": [{"v": "81-2096"}, {"v": "49670"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Camus Ligios", "nums": [{"v": "81-2124"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Dalos", "nums": [{"v": "81-2406"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Dannenberg", "nums": [{"v": "81-2472"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Demirel", "nums": [{"v": "81-2467"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Doná", "nums": [{"v": "81-4943"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Duca", "nums": [{"v": "81-2426"}, {"v": "28060"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Ermolaev", "nums": [{"v": "81-2321"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Frey", "nums": [{"v": "81-2470"}, {"v": "46120"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Gabriel", "nums": [{"v": "81-2405"}, {"v": "45070"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Galli", "nums": [{"v": "81-2496"}, {"v": "47140"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Gatterer", "nums": [{"v": "81-2224"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Gerges", "nums": [{"v": "81-7228"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Gottsauner-Wolf", "nums": [{"v": "81-2450"}, {"v": "49640"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Graf", "nums": [{"v": "81-2480"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Gutmann", "nums": [{"v": "81-2127"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Gwechenberger", "nums": [{"v": "81-2447"}, {"v": "72740"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Gyöngyösi", "nums": [{"v": "81-2437"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Haider", "nums": [{"v": "81-2412"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Halavina", "nums": [{"v": "81-2476"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Hammer", "nums": [{"v": "81-2465"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Hamzaraj", "nums": [{"v": "81-4225"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Hauptmann", "nums": [{"v": "81-2320"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Heinz", "nums": [{"v": "81-2435"}, {"v": "45180"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Heitzinger", "nums": [{"v": "81-2439"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Hemetsberger", "nums": [{"v": "81-4912"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Hofbauer", "nums": [{"v": "81-2468"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Hofer", "nums": [{"v": "81-3151"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Hülsmann", "nums": [{"v": "81-2488"}, {"v": "61043"}, {"v": "49660"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Jantsch", "nums": [{"v": "81-2319"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Kammerlander", "nums": [{"v": "81-2436"}, {"v": "28060"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Kastl", "nums": [{"v": "81-2368"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Kastner", "nums": [{"v": "81-2424"}, {"v": "45071"}, {"v": "24810"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Kazem", "nums": [{"v": "81-2445"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Klappacher", "nums": [{"v": "81-2216"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Koller", "nums": [{"v": "81-2483"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Koschatko", "nums": [{"v": "81-2893"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Koschutnik", "nums": [{"v": "81-2135"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Kronberger", "nums": [{"v": "81-7707"}, {"v": "62760", "l": "Raum A"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Krychtiuk", "nums": [{"v": "81-2475"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Lang", "nums": [{"v": "81-2473"}, {"v": "46170"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Lee", "nums": [{"v": "81-2487"}, {"v": "73516"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Lenz", "nums": [{"v": "81-2403"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Mann", "nums": [{"v": "81-6267"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Mascherbauer", "nums": [{"v": "81-2575"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Nitsche", "nums": [{"v": "81-2438"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Pavo", "nums": [{"v": "81-2404"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Pezawas", "nums": [{"v": "81-2366"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Pichler Philipp", "nums": [{"v": "81-2410"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Prausmüller", "nums": [{"v": "81-6279"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Qin Hong", "nums": [{"v": "73619"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Rettl", "nums": [{"v": "81-7708"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Richter", "nums": [{"v": "81-2498"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Riesenhuber", "nums": [{"v": "81-2016"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Rosenhek", "nums": [{"v": "81-2548"}, {"v": "46390"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Schrutka", "nums": [{"v": "81-2602"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Schukro Ch", "nums": [{"v": "81-2367"}], "note": "für low-tesla MR bei PCM", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Schönbauer", "nums": [{"v": "81-2474"}, {"v": "46110"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Siller-Matula", "nums": [{"v": "81-2458"}, {"v": "46380"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Skoro-Sajer", "nums": [{"v": "81-2402"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Speidl", "nums": [{"v": "81-2444"}, {"v": "47120"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Spinka", "nums": [{"v": "81-6278"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Sponder", "nums": [{"v": "81-2310"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Steinacher", "nums": [{"v": "81-2547"}, {"v": "73516"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Stix", "nums": [{"v": "81-2477"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Stojkovic", "nums": [{"v": "81-2466"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Sulzgruber", "nums": [{"v": "81-6275"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Thomae", "nums": [{"v": "81-2471"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Toma", "nums": [{"v": "81-2234", "l": "Spannbauer"}, {"v": "46115"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Vertesich", "nums": [{"v": "81-2312"}, {"v": "48590", "l": "TAVI Gruppe / TAVI-Gruppe"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Zelniker", "nums": [{"v": "81-3153"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Zilberszac", "nums": [{"v": "81-2408"}], "note": "", "c": "Kardiologie", "s": "Ärzt:innen"}, {"n": "Abu-Hamde", "nums": [{"v": "81-8721"}], "note": "", "c": "Konsile & Dienste", "s": "Allgemein"}, {"n": "Assistenzarzt Dienst Ebene 16/17", "nums": [{"v": "81-2027"}], "note": "", "c": "Konsile & Dienste", "s": "Allgemein", "a": "Hauptdienst A"}, {"n": "Assistenzarzt Dienst Ebene 18", "nums": [{"v": "81-2025"}], "note": "", "c": "Konsile & Dienste", "s": "Allgemein", "a": "Hauptdienst B"}, {"n": "Cesar Khazen", "nums": [{"v": "81-4234"}], "note": "", "c": "Konsile & Dienste", "s": "Allgemein"}, {"n": "Gerinnung", "nums": [{"v": "44070", "l": "Gerinnungsambulanz Arzt/in"}, {"v": "81-3135"}, {"v": "44970", "l": "Gerinnungsambulanz Termin"}], "note": "", "c": "Konsile & Dienste", "s": "Allgemein", "a": "Gerinnungs- und Thromboseambulanz"}, {"n": "Notfall OA-Dienst", "nums": [{"v": "81-1964"}], "note": "", "c": "Konsile & Dienste", "s": "Allgemein"}, {"n": "Oberarzt Dienst Ebene 16/17/18", "nums": [{"v": "81-2023"}], "note": "", "c": "Konsile & Dienste", "s": "Allgemein", "a": "OA-Dienst"}, {"n": "Pagerambulanz 8B", "nums": [{"v": "99770"}], "note": "Mo-Fr 10-11 Uhr", "c": "Konsile & Dienste", "s": "Allgemein"}, {"n": "Tech. Störungsdienst", "nums": [{"v": "42200"}], "note": "", "c": "Konsile & Dienste", "s": "Allgemein", "a": "Gebäudetechnik / Haustechnik"}, {"n": "Allgemeinchirurgie / Chirurgie – Konsildienst", "nums": [{"v": "81-6901"}], "note": "für Notfall 81-4001", "c": "Konsile & Dienste", "s": "Chirurgie & Anästhesie", "a": "Chir. Konsil / Chir Allgemein Konsil / Chir-Konsil / Diensthabender Gefäßchirurg"}, {"n": "Chir-Konsil Hauptdienst", "nums": [{"v": "81-4001"}], "note": "", "c": "Konsile & Dienste", "s": "Chirurgie & Anästhesie"}, {"n": "Gefäßchirurgie – Konsildienst", "nums": [{"v": "81-6903"}], "note": "", "c": "Konsile & Dienste", "s": "Chirurgie & Anästhesie"}, {"n": "Herzchirurgie", "nums": [{"v": "81-7820"}], "note": "", "c": "Konsile & Dienste", "s": "Chirurgie & Anästhesie"}, {"n": "Kardiotechnik", "nums": [{"v": "81-5020"}], "note": "", "c": "Konsile & Dienste", "s": "Chirurgie & Anästhesie"}, {"n": "Plastische", "nums": [{"v": "69800"}, {"v": "69080"}], "note": "automatisch", "c": "Konsile & Dienste", "s": "Chirurgie & Anästhesie"}, {"n": "Schmerz-Dienst", "nums": [{"v": "81-4715"}], "note": "piepsen", "c": "Konsile & Dienste", "s": "Chirurgie & Anästhesie"}, {"n": "Thoraxchir. Konsil", "nums": [{"v": "81-4263"}], "note": "", "c": "Konsile & Dienste", "s": "Chirurgie & Anästhesie"}, {"n": "Gerinnungshandy ab 14:00", "nums": [{"v": "0664/8131357"}], "note": "", "c": "Konsile & Dienste", "s": "Hämato & Onko", "a": "Gerinnungsdienst / Häma GER-Handy (Gerinnung)"}, {"n": "Häma Ambulanz/Konsil bis 14:00", "nums": [{"v": "50830", "l": "6I"}, {"v": "44640"}], "note": "", "c": "Konsile & Dienste", "s": "Hämato & Onko", "a": "Hämatologie – Ambulanz / 6i Häma / Leitstelle 6i"}, {"n": "FP Onko-OA", "nums": [{"v": "81-2013"}], "note": "", "c": "Konsile & Dienste", "s": "Innere Med. I (Häma/Onko/Infekt)"}, {"n": "Hauptdienst CD", "nums": [{"v": "44801"}], "note": "", "c": "Konsile & Dienste", "s": "Innere Med. I (Häma/Onko/Infekt)"}, {"n": "Journaldienst Häma", "nums": [{"v": "26202"}], "note": "", "c": "Konsile & Dienste", "s": "Innere Med. I (Häma/Onko/Infekt)"}, {"n": "Journaldienst Intensiv 1", "nums": [{"v": "26203"}], "note": "", "c": "Konsile & Dienste", "s": "Innere Med. I (Häma/Onko/Infekt)"}, {"n": "Journaldienst Intensiv 2", "nums": [{"v": "26204"}], "note": "", "c": "Konsile & Dienste", "s": "Innere Med. I (Häma/Onko/Infekt)"}, {"n": "Journaldienst KMT", "nums": [{"v": "26205"}], "note": "", "c": "Konsile & Dienste", "s": "Innere Med. I (Häma/Onko/Infekt)"}, {"n": "KPJ", "nums": [{"v": "81-2112"}], "note": "", "c": "Konsile & Dienste", "s": "Innere Med. I (Häma/Onko/Infekt)"}, {"n": "Onko Ambulanz OA", "nums": [{"v": "81-2251"}], "note": "", "c": "Konsile & Dienste", "s": "Innere Med. I (Häma/Onko/Infekt)", "a": "Eva Reitter / Eva Maria Reitter"}, {"n": "20K/J OA ND", "nums": [{"v": "81-2144"}], "note": "", "c": "Konsile & Dienste", "s": "Innere Medizin"}, {"n": "Gastro-Konsil", "nums": [{"v": "81-4904", "l": "Gastroenterologie – Konsil / Gastroenterologie – Funktionspager (ab 16:00)"}, {"v": "81-4901", "l": "Gastroenterologie – Assi"}], "note": "", "c": "Konsile & Dienste", "s": "Innere Medizin", "a": "Endoskopie Konsil Pager"}, {"n": "Infektiologie – Diensthandy (ab 16:00)", "nums": [{"v": "**500", "l": "Infektionsdienst Diensthandy"}, {"v": "0664/8001657711"}], "note": "", "c": "Konsile & Dienste", "s": "Innere Medizin"}, {"n": "Infektiologie – Infektdienst / Infektkonsildienst", "nums": [{"v": "81-2519"}], "note": "", "c": "Konsile & Dienste", "s": "Innere Medizin", "a": "Infektionsdienst"}, {"n": "Nephro-Konsil", "nums": [{"v": "81-7401"}], "note": "", "c": "Konsile & Dienste", "s": "Innere Medizin"}, {"n": "Nephro-Konsil / Nephrologie – Funktionspager (Konsil)", "nums": [{"v": "81-7400"}], "note": "automatisch", "c": "Konsile & Dienste", "s": "Innere Medizin", "a": "20I/H OA ND / Nephro Dienst"}, {"n": "Labormediziner (Diensthabender)", "nums": [{"v": "81-1149"}], "note": "", "c": "Konsile & Dienste", "s": "Labor & Blut"}, {"n": "Neuro akut", "nums": [], "note": "STATION", "c": "Konsile & Dienste", "s": "Neuro & Psych"}, {"n": "Neurokonsil-Dienst", "nums": [{"v": "81-3112", "l": "Neurologie – Konsil / Neuro-Konsil"}, {"v": "81-3101"}], "note": "81-3101 (für Normalstation) bis 14 uhr, ab 14 uhr 81-3117;", "c": "Konsile & Dienste", "s": "Neuro & Psych"}, {"n": "Psychiatrie – Konsiliardienst (Notfälle) / Psych-Konsil ab 14h", "nums": [{"v": "81-3500"}], "note": "ab 14:00 Uhr", "c": "Konsile & Dienste", "s": "Neuro & Psych", "a": "DHOA Psychiatrie Akut"}, {"n": "Psychiatrie – Konsiliardienst / Psychiatrie – Konsildienst", "nums": [{"v": "81-3501"}], "note": "roter Bettenturm bis 14:00 Uhr; DEC: 37689", "c": "Konsile & Dienste", "s": "Neuro & Psych", "a": "Psych-Konsil 8-14h"}, {"n": "Stroke Dienst", "nums": [{"v": "81-3116"}], "note": "", "c": "Konsile & Dienste", "s": "Neuro & Psych"}, {"n": "Augenkonsil", "nums": [{"v": "81-1985"}], "note": "piepsen", "c": "Konsile & Dienste", "s": "Weitere Fächer"}, {"n": "Derma", "nums": [], "note": "automatisch", "c": "Konsile & Dienste", "s": "Weitere Fächer"}, {"n": "Derma-Konsil", "nums": [{"v": "81-8295"}], "note": "", "c": "Konsile & Dienste", "s": "Weitere Fächer"}, {"n": "HNO-Konsil / HNO Konsil", "nums": [{"v": "81-8443"}], "note": "", "c": "Konsile & Dienste", "s": "Weitere Fächer"}, {"n": "Ortho-Konsil", "nums": [{"v": "81-8600"}, {"v": "40800"}], "note": "", "c": "Konsile & Dienste", "s": "Weitere Fächer"}, {"n": "Urologie – Konsildienst", "nums": [{"v": "81-8705"}], "note": "", "c": "Konsile & Dienste", "s": "Weitere Fächer"}, {"n": "Blutbank / Transfusionsmedizin", "nums": [{"v": "53220"}], "note": "", "c": "Labor & Blut", "s": "Blutbank & Transfusion", "a": "EK abrufen (Blutbank) / Ery's/Plasma abrufen / EK abberufen / Transfusionsmedizin EK abrufen"}, {"n": "Blutgruppen-Kreuzprobe", "nums": [{"v": "23200"}], "note": "", "c": "Labor & Blut", "s": "Blutbank & Transfusion"}, {"n": "Blutgruppenserologie / Transfusionsmedizin Leitstelle 4i", "nums": [{"v": "53200"}], "note": "", "c": "Labor & Blut", "s": "Blutbank & Transfusion"}, {"n": "Fremdspendermeldung", "nums": [{"v": "+43 1515 6144"}], "note": "", "c": "Labor & Blut", "s": "Blutbank & Transfusion"}, {"n": "HLA Labor", "nums": [{"v": "53340"}], "note": "", "c": "Labor & Blut", "s": "Blutbank & Transfusion"}, {"n": "KMT (HLA-Labor) / HLA Typisierung", "nums": [{"v": "53320"}], "note": "", "c": "Labor & Blut", "s": "Blutbank & Transfusion", "a": "DNA-Labor (KM-Spender-Befunde)"}, {"n": "Patricia Rajsp", "nums": [{"v": "81-1597"}], "note": "", "c": "Labor & Blut", "s": "Blutbank & Transfusion"}, {"n": "Schlager Oliver", "nums": [{"v": "81-2484"}], "note": "", "c": "Labor & Blut", "s": "Blutbank & Transfusion"}, {"n": "Spenderadmin", "nums": [{"v": "53030"}], "note": "", "c": "Labor & Blut", "s": "Blutbank & Transfusion"}, {"n": "Thrombos", "nums": [{"v": "53070"}, {"v": "53020", "l": "Transfusionsmedizin Diensthabender"}], "note": "", "c": "Labor & Blut", "s": "Blutbank & Transfusion", "a": "Thrombos abberufen"}, {"n": "Thrombos faxen", "nums": [{"v": "40404"}], "note": "", "c": "Labor & Blut", "s": "Blutbank & Transfusion"}, {"n": "Transfusionsmedizin – Plasmapherese", "nums": [{"v": "44040"}], "note": "", "c": "Labor & Blut", "s": "Blutbank & Transfusion"}, {"n": "Transfusionsmedizin – Sekretariat", "nums": [{"v": "53080"}], "note": "", "c": "Labor & Blut", "s": "Blutbank & Transfusion"}, {"n": "Linz Bettelheim", "nums": [{"v": "00 732 6665 6665"}], "note": "", "c": "Labor & Blut", "s": "Externe Labors"}, {"n": "Linz Leuko-Typ.", "nums": [{"v": "00 732 7677 7382"}], "note": "", "c": "Labor & Blut", "s": "Externe Labors"}, {"n": "Linz Otto Zach", "nums": [{"v": "00732 7677 4120"}], "note": "", "c": "Labor & Blut", "s": "Externe Labors"}, {"n": "Molekularbiologie", "nums": [{"v": "00732 7677 7587", "l": "Linz Molekularbio"}, {"v": "00732 7677 7741"}], "note": "", "c": "Labor & Blut", "s": "Externe Labors"}, {"n": "Akutlabor / Allgemeines Labor", "nums": [{"v": "53570"}], "note": "", "c": "Labor & Blut", "s": "Labor"}, {"n": "Gerinnung", "nums": [{"v": "53930"}], "note": "", "c": "Labor & Blut", "s": "Labor"}, {"n": "Hauptlabor / Gerinnungsspezifisch", "nums": [{"v": "53590"}], "note": "für unvidierte CTs", "c": "Labor & Blut", "s": "Labor", "a": "Laborwert nachfordern / Laborbefund nachfordern"}, {"n": "Häma Labor", "nums": [{"v": "53990", "l": "Hämatologie (Blutbild) / Hämatologie – Labor"}, {"v": "53720", "l": "KM-Ausstriche"}], "note": "", "c": "Labor & Blut", "s": "Labor", "a": "BB Labor / Diff nachfordern"}, {"n": "Mikrobiologie 5P Befundauskunft", "nums": [{"v": "51610"}], "note": "", "c": "Labor & Blut", "s": "Labor"}, {"n": "Mikrosk. Diff. nachfordern", "nums": [{"v": "53960", "l": "Häma Labor (Diff)"}, {"v": "53990"}], "note": "", "c": "Labor & Blut", "s": "Labor"}, {"n": "Viro nachfragen", "nums": [{"v": "51700"}, {"v": "51380"}], "note": "", "c": "Labor & Blut", "s": "Labor"}, {"n": "Virologie 4P", "nums": [{"v": "51500"}, {"v": "51690"}], "note": "", "c": "Labor & Blut", "s": "Labor"}, {"n": "Gyn Genetik-Labor", "nums": [{"v": "78360"}], "note": "", "c": "Labor & Blut", "s": "Pathologie & Genetik"}, {"n": "Histopatho / Histo-Leitstelle", "nums": [{"v": "36750"}], "note": "", "c": "Labor & Blut", "s": "Pathologie & Genetik", "a": "Patho Histo-Leitstelle"}, {"n": "Hämatologie – Genetik / Häma Genetik", "nums": [{"v": "20430"}], "note": "10-11, 14-15 Uhr", "c": "Labor & Blut", "s": "Pathologie & Genetik", "a": "Chromosomenanalyse / Molekularbefunde"}, {"n": "Kornauth Christoph", "nums": [{"v": "81-8521"}], "note": "", "c": "Labor & Blut", "s": "Pathologie & Genetik"}, {"n": "Molekularpathologie", "nums": [{"v": "36650"}, {"v": "36700"}], "note": "", "c": "Labor & Blut", "s": "Pathologie & Genetik"}, {"n": "Neuropatho", "nums": [{"v": "55600"}], "note": "", "c": "Labor & Blut", "s": "Pathologie & Genetik"}, {"n": "Patholeitstelle (Obduktion) 3i", "nums": [{"v": "36920"}], "note": "", "c": "Labor & Blut", "s": "Pathologie & Genetik"}, {"n": "Schiefer Ana-Iris", "nums": [{"v": "81-8493"}], "note": "", "c": "Labor & Blut", "s": "Pathologie & Genetik"}, {"n": "Simonitsch-Klupp Ingrid", "nums": [{"v": "81-8500"}], "note": "", "c": "Labor & Blut", "s": "Pathologie & Genetik"}, {"n": "Zytogenetik Labor", "nums": [{"v": "71740"}], "note": "", "c": "Labor & Blut", "s": "Pathologie & Genetik"}, {"n": "Zytologie (Karyotyp)", "nums": [{"v": "78430"}], "note": "", "c": "Labor & Blut", "s": "Pathologie & Genetik"}, {"n": "EEG", "nums": [{"v": "31243"}, {"v": "81-3080"}], "note": "", "c": "Neuro & Psych", "s": "Neurologie"}, {"n": "EEG mobil / Neurodiagnostik", "nums": [{"v": "81-3080"}, {"v": "31070"}], "note": "Arzt: 31040", "c": "Neuro & Psych", "s": "Neurologie"}, {"n": "Neuro akut", "nums": [], "note": "STATION", "c": "Neuro & Psych", "s": "Neurologie"}, {"n": "Neurologie Ambulanz Leitstelle 6A", "nums": [{"v": "31240", "l": "Neurodiagnostik"}, {"v": "31250"}], "note": "", "c": "Neuro & Psych", "s": "Neurologie"}, {"n": "Evaluierung Psychotherapie", "nums": [{"v": "36350"}], "note": "Anfrage, wer Koordinator ist", "c": "Neuro & Psych", "s": "Psychiatrie & Psychologie"}, {"n": "LTX-Psychologin", "nums": [{"v": "81-4048"}], "note": "", "c": "Neuro & Psych", "s": "Psychiatrie & Psychologie"}, {"n": "Psychologenkammer Ebene 18", "nums": [{"v": "61300"}], "note": "", "c": "Neuro & Psych", "s": "Psychiatrie & Psychologie"}, {"n": "CCT-Anmeldung akut", "nums": [{"v": "25760"}], "note": "", "c": "Radiologie & Nuklear", "s": "CT"}, {"n": "CT / Radiologe Befundungsraum", "nums": [{"v": "76110"}], "note": "", "c": "Radiologie & Nuklear", "s": "CT", "a": "CT Befundraum / CT-Befundraum"}, {"n": "CT 6F", "nums": [{"v": "48700"}, {"v": "81-6070", "l": "Pager"}], "note": "", "c": "Radiologie & Nuklear", "s": "CT", "a": "AKUT CT PAGER"}, {"n": "CT Arzt akut", "nums": [{"v": "58240", "l": "8F Befundraum"}, {"v": "48900"}], "note": "", "c": "Radiologie & Nuklear", "s": "CT"}, {"n": "CT Herz", "nums": [{"v": "58250", "l": "CT 8F / 8F CT-Anmeldung"}, {"v": "58244", "l": "Rad"}], "note": "", "c": "Radiologie & Nuklear", "s": "CT", "a": "CT Aorta"}, {"n": "CT-Schreibraum", "nums": [{"v": "58210"}, {"v": "61660", "l": "Radiologie Bilder importieren NÖ"}], "note": "", "c": "Radiologie & Nuklear", "s": "CT"}, {"n": "CT/US 6F / CT-Anmeldung", "nums": [{"v": "48700", "l": "CT-Anmeldung 6F / CT (Anmeldung)"}, {"v": "48900", "l": "6F"}], "note": "", "c": "Radiologie & Nuklear", "s": "CT", "a": "CT Termin"}, {"n": "Duplexsono Angio 6J", "nums": [{"v": "46610"}], "note": "", "c": "Radiologie & Nuklear", "s": "Intervention & Angio", "a": "Angiologie – Duplex"}, {"n": "Interventionelle 8F / Radiologie Intervention", "nums": [{"v": "58270", "l": "LS"}, {"v": "81-2153", "l": "RTA 8F"}, {"v": "57970", "l": "Angio"}], "note": "", "c": "Radiologie & Nuklear", "s": "Intervention & Angio", "a": "Katheterlabor / Interventionelle Radiologie 8F / PTA/Katheter 8F / 8F Angiologie Katheterleitstelle / PICC-Anmeldung / Pigtail Termin 8F / Interventionelle Radiologie – Allgemein / CT-gezielte Punktion / PICC Angio Termin"}, {"n": "Interventionelle Radiologie – PICC", "nums": [{"v": "57970"}, {"v": "46190"}], "note": "", "c": "Radiologie & Nuklear", "s": "Intervention & Angio"}, {"n": "Katheter 1-2", "nums": [{"v": "58180"}], "note": "", "c": "Radiologie & Nuklear", "s": "Intervention & Angio"}, {"n": "Katheter 4", "nums": [{"v": "58360"}], "note": "", "c": "Radiologie & Nuklear", "s": "Intervention & Angio"}, {"n": "PTA Aufenthaltsraum 8F", "nums": [{"v": "58310"}], "note": "", "c": "Radiologie & Nuklear", "s": "Intervention & Angio"}, {"n": "Spritzenschulung (Herta)", "nums": [{"v": "81-1189"}, {"v": "42920"}], "note": "", "c": "Radiologie & Nuklear", "s": "Intervention & Angio"}, {"n": "cMRT", "nums": [{"v": "48480", "l": "MRT - Schädel / MRT direkt/Akutliste/Neuro"}, {"v": "23570"}, {"v": "81-3915"}], "note": "", "c": "Radiologie & Nuklear", "s": "MRT", "a": "MRT-Akutliste (Neuro)"}, {"n": "MR allgemein / Radiologie – MRT", "nums": [{"v": "63770"}], "note": "", "c": "Radiologie & Nuklear", "s": "MRT", "a": "MR Termin / MRT Termin"}, {"n": "MR Herz / MRT-Angio", "nums": [{"v": "58200"}], "note": "", "c": "Radiologie & Nuklear", "s": "MRT", "a": "MRT Herz / Herz-MR / Herz-MRT"}, {"n": "mr ortho / MRT Orthopädie", "nums": [{"v": "58420", "l": "8F"}], "note": "", "c": "Radiologie & Nuklear", "s": "MRT", "a": "MRT Tumorortho"}, {"n": "MRT Anm Notfall", "nums": [{"v": "81-6052"}], "note": "(Wochenende)", "c": "Radiologie & Nuklear", "s": "MRT"}, {"n": "MRT Prostata", "nums": [{"v": "22910"}], "note": "", "c": "Radiologie & Nuklear", "s": "MRT"}, {"n": "MRT-Akutliste (Rest)", "nums": [{"v": "61500"}], "note": "", "c": "Radiologie & Nuklear", "s": "MRT"}, {"n": "Ganzkörperknochenscan", "nums": [{"v": "55510"}], "note": "", "c": "Radiologie & Nuklear", "s": "Nuklearmedizin"}, {"n": "Oana", "nums": [{"v": "81-3364"}], "note": "", "c": "Radiologie & Nuklear", "s": "Nuklearmedizin"}, {"n": "PET-CT Befund", "nums": [{"v": "16920"}], "note": "", "c": "Radiologie & Nuklear", "s": "Nuklearmedizin"}, {"n": "PET-MRT", "nums": [{"v": "27450"}, {"v": "73412"}], "note": "", "c": "Radiologie & Nuklear", "s": "Nuklearmedizin"}, {"n": "Radiojod", "nums": [{"v": "55680"}], "note": "", "c": "Radiologie & Nuklear", "s": "Nuklearmedizin"}, {"n": "Radiologie – PET-CT", "nums": [{"v": "55511"}, {"v": "55518", "l": "Rad"}, {"v": "55515", "l": "Nuklearmedizin – PET-CT"}], "note": "", "c": "Radiologie & Nuklear", "s": "Nuklearmedizin"}, {"n": "6F Leitstelle", "nums": [{"v": "48900", "l": "Leitstelle 6F (CT/Röntgen/Sonographie, Papierzuweisung)"}, {"v": "48990"}, {"v": "48970", "l": "Fax"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen", "a": "Radiologie-Anmeldung / Sono Termin / RöVisite Fax / Radiologie – Leistelle 6F"}, {"n": "7F Leitstelle (7:30-15:30)", "nums": [{"v": "48240", "l": "Radiologie / Panoramaröntgen"}, {"v": "48250"}, {"v": "48400"}, {"v": "48380", "l": "Fax"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen", "a": "Mammographie"}, {"n": "8F", "nums": [{"v": "58270"}, {"v": "58260", "l": "Radiologie – CT / CT - gezielte Biopsie"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen"}, {"n": "8F (Mo-Fr 6:30-18:30)", "nums": [{"v": "58270"}, {"v": "58280", "l": "Fax"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen", "a": "Bx Fax Anmeldung"}, {"n": "Alexander Wressnegger", "nums": [{"v": "81-7756"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen"}, {"n": "Bett Röntgen C/P / Bettröntgen", "nums": [{"v": "81-6065"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen", "a": "Bedside-Röntgen / Bettröntgen (roter Bettenturm)"}, {"n": "DEXA-Scan (7F)", "nums": [{"v": "48720"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen"}, {"n": "Duplexsono Radio 8F", "nums": [{"v": "76260"}, {"v": "76250"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen"}, {"n": "Endo-Sono", "nums": [{"v": "49190"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen"}, {"n": "Neuroradiologie Leitstelle (7:30-15:30)", "nums": [{"v": "25750"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen"}, {"n": "Radiologie CD-Import/Brennen", "nums": [{"v": "76350"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen"}, {"n": "Radiologie externe Befunde (Bilder) – Zuweisung Fax", "nums": [{"v": "62400"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen"}, {"n": "Radiologie – Ultraschall / Ultraschallanmeldung", "nums": [{"v": "48710", "l": "Sono Befundraum"}, {"v": "48900"}], "note": "(Th/Abd)", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen"}, {"n": "Sono Brust", "nums": [{"v": "76400"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen"}, {"n": "Strahlentherapie Kontrolltermin", "nums": [{"v": "26650"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen"}, {"n": "Termin StrahlenTX / Strahlenmedizin Erstvergabe", "nums": [{"v": "27230"}], "note": "", "c": "Radiologie & Nuklear", "s": "Röntgen, Sono & Leitstellen"}, {"n": "17K Arztzimmer", "nums": [{"v": "77790"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "17K Station", "nums": [{"v": "77800", "l": "Palliativstation"}, {"v": "77810"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "18H Arztzimmer", "nums": [{"v": "44770"}, {"v": "44775"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "18H Schwesternzimmer", "nums": [{"v": "44810"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "18H Stützpunkt", "nums": [{"v": "44790"}, {"v": "44800", "l": "Fax"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "18K Assistentenzimmer", "nums": [{"v": "46910"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "19K Nachtdienstzimmer", "nums": [{"v": "46500"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "19K Ärztezimmer", "nums": [{"v": "46900"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "Blau A", "nums": [{"v": "44010"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "Blau B", "nums": [{"v": "44080"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "Leitstelle 16", "nums": [{"v": "57160"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "Leitstelle 18", "nums": [{"v": "57180", "l": "Hämatologie – Leitstelle 18I"}, {"v": "57280", "l": "Schreibstube"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "Leitstelle 20 rot", "nums": [{"v": "57300", "l": "Schreibraum"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "Leitstelle 9i", "nums": [{"v": "41660"}, {"v": "64170"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "Leitstelle Bettenstationen roter Turm", "nums": [], "note": "57 + Ebene + 0", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "Tagesklinik 18K", "nums": [{"v": "46850"}, {"v": "46860"}, {"v": "46870", "l": "Fax"}], "note": "", "c": "Stationen AKH", "s": "Stationen & Leitstellen"}, {"n": "Apotheke", "nums": [{"v": "15720"}, {"v": "15350"}], "note": "", "c": "Verwaltung & Sonstiges", "s": "Sonstiges"}, {"n": "Apotheke – E-Mail", "nums": [], "note": "arzneimittelinformation@akhwien.at", "c": "Verwaltung & Sonstiges", "s": "Sonstiges"}, {"n": "Ausweisreferat", "nums": [{"v": "20080"}, {"v": "6054"}], "note": "", "c": "Verwaltung & Sonstiges", "s": "Sonstiges"}, {"n": "Chefarzt", "nums": [{"v": "16190"}, {"v": "16200", "l": "Chefärztin"}, {"v": "16210", "l": "Fax"}], "note": "", "c": "Verwaltung & Sonstiges", "s": "Sonstiges"}, {"n": "Rezepte nach 15:00", "nums": [{"v": "-50808300"}], "note": "", "c": "Verwaltung & Sonstiges", "s": "Sonstiges"}, {"n": "Sozialarbeit", "nums": [{"v": "81-1680"}], "note": "", "c": "Verwaltung & Sonstiges", "s": "Sonstiges"}, {"n": "Wagenlechner Irene / Bettenmanagement", "nums": [{"v": "13960"}], "note": "", "c": "Verwaltung & Sonstiges", "s": "Sonstiges"}, {"n": "Wiener GKK", "nums": [{"v": "40400 16200"}], "note": "", "c": "Verwaltung & Sonstiges", "s": "Sonstiges"}, {"n": "Augen 8i", "nums": [{"v": "79000", "l": "Angio"}, {"v": "79850"}], "note": "", "c": "Weitere Fächer", "s": "Augen"}, {"n": "Derma-Amb Leitstelle 7J", "nums": [{"v": "77190"}, {"v": "77200"}], "note": "", "c": "Weitere Fächer", "s": "Dermatologie"}, {"n": "Gyn Brustambulanz", "nums": [{"v": "28980"}], "note": "", "c": "Weitere Fächer", "s": "Gynäkologie"}, {"n": "Gyn-Ambulanz 8C", "nums": [{"v": "28040"}, {"v": "28280"}], "note": "", "c": "Weitere Fächer", "s": "Gynäkologie"}, {"n": "Kinderwunschambulanz (Sperma/Eizellspende prä CHT)", "nums": [{"v": "28140"}], "note": "", "c": "Weitere Fächer", "s": "Gynäkologie"}, {"n": "HNO – Ambulanz", "nums": [{"v": "33300"}, {"v": "33310"}, {"v": "33180"}, {"v": "33320", "l": "Fax"}], "note": "", "c": "Weitere Fächer", "s": "HNO", "a": "HNO Amb Leitstelle 8J"}, {"n": "MKG", "nums": [{"v": "42760"}], "note": "", "c": "Weitere Fächer", "s": "MKG"}, {"n": "MKG Ambulanz", "nums": [{"v": "40940"}], "note": "", "c": "Weitere Fächer", "s": "MKG"}, {"n": "Ortho-Ambulanz Leitstelle 7D", "nums": [{"v": "40860", "l": "Orthopädie 7D"}, {"v": "40810"}], "note": "automatisch", "c": "Weitere Fächer", "s": "Orthopädie & Unfall"}, {"n": "Uro-Ambulanz", "nums": [{"v": "26220"}, {"v": "26230"}], "note": "", "c": "Weitere Fächer", "s": "Urologie"}], "notes": ["Calprotectin über 7i, Raum Blau i - Konsiliarschein ausfüllen", "Pankreas-Elastase - Schein Sondermaterial, ad Zentrallabor, Abnahme an 3 aufeinanderfolgenden Tagen"]};
+
+</script>
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm=s=>String(s||"").toLowerCase().replace(/ä/g,"a").replace(/ö/g,"o").replace(/ü/g,"u").replace(/ß/g,"ss").normalize("NFD").replace(/[̀-ͯ]/g,"");
+const store={get(k,d){try{const v=localStorage.getItem("kdb."+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("kdb."+k,JSON.stringify(v))}catch(e){}}};
+
+const SEC={
+  home:{t:"Start",c:"var(--accent)"},
+  perf:{t:"Perfusor",c:"var(--c-perf)"},
+  nacht:{t:"Nachtdienst",c:"var(--c-nacht)"},
+  tel:{t:"Telefon",c:"var(--c-tel)"},
+  sop:{t:"SOPs",c:"var(--c-sop)"}
+};
+const ICON={
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>',
+  perf:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="15" height="8" rx="1.5"/><path d="M17 12h5M6 8v8M10 8v8"/><path d="M2 12h0"/></svg>',
+  nacht:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
+  tel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z"/></svg>',
+  sop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></svg>'
+};
+const LOGO="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMjU2M2ViIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMGIxZDU2Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJodCIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZjU0NjgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNkOTEyM2EiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJzaCIgeD0iLTIwJSIgeT0iLTIwJSIgd2lkdGg9IjE0MCUiIGhlaWdodD0iMTQwJSI+CiAgICAgIDxmZURyb3BTaGFkb3cgZHg9IjAiIGR5PSIxMCIgc3RkRGV2aWF0aW9uPSIxNCIgZmxvb2QtY29sb3I9IiMwMjBhMmEiIGZsb29kLW9wYWNpdHk9Ii40NSIvPgogICAgPC9maWx0ZXI+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiBmaWxsPSJ1cmwoI2JnKSIvPgogIDxjaXJjbGUgY3g9IjQyMCIgY3k9IjgwIiByPSIxOTAiIGZpbGw9IiNmZmZmZmYiIG9wYWNpdHk9Ii4wNiIvPgogIDxwYXRoIGZpbHRlcj0idXJsKCNzaCkiIGZpbGw9InVybCgjaHQpIiBkPSJNMjU2IDQyMGMtNyAwLTEzLTMtMTgtN0wxMjAgMzAwYy00Mi00MS00OC0xMDYtMTItMTUwIDM3LTQ1IDEwNC01MCAxNDctMTFsMSAxIDEtMWM0My0zOSAxMTAtMzQgMTQ3IDExIDM2IDQ0IDMwIDEwOS0xMiAxNTBMMjc0IDQxM2MtNSA0LTExIDctMTggN3oiLz4KICA8cGF0aCBkPSJNODYgMjYyaDkybDI0LTUyIDM4IDExMiAzNC05NiAyMCAzNmg4NiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8cGF0aCBkPSJNMzg4IDIyNGwzOCAzOC0zOCAzOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==";
+const SEARCH_SVG='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>';
+
+/* ---------- Zahlen ---------- */
+const parseNum=s=>{const v=parseFloat(String(s).replace(",",".").replace(/[^\d.\-]/g,""));return isFinite(v)?v:NaN};
+function fmt(v,maxd){ if(!isFinite(v))return "–"; let d=maxd!=null?maxd:(Math.abs(v)>=100?0:Math.abs(v)>=10?1:Math.abs(v)>=1?1:2);
+  let s=(Math.round(v*Math.pow(10,d))/Math.pow(10,d)).toFixed(d); if(d>0)s=s.replace(/0+$/,"").replace(/\.$/,""); return s.replace(".",","); }
+function getKg(){const v=store.get("kg",null);return v&&v>0?v:null}
+function setKg(v){store.set("kg",v>0?v:null)}
+
+/* Dosis ↔ ml/h. ml/h = Dosis × (kg) × m / c */
+function toRate(c,dose,kg){ if(c.w&&!kg)return NaN; return dose*(c.w?kg:1)*(c.m||1)/c.cc; }
+function toDose(c,rate,kg){ if(c.w&&!kg)return NaN; return rate*c.cc/((c.w?kg:1)*(c.m||1)); }
+function calcOf(d){ if(!d.calc)return null; const c=Object.assign({},d.calc); const opt=store.get("conc."+d.id,0);
+  if(c.co){const o=c.co[Math.min(opt,c.co.length-1)];c.cc=o[1];c.cl=o[0];} else c.cc=c.c; return c; }
+function rateRange(c,arr,kg){ if(!arr||!arr.length)return ""; const r=arr.map(x=>toRate(c,x,kg)); if(r.some(x=>!isFinite(x)))return "";
+  return r.length>1?fmt(r[0])+"–"+fmt(r[1]):fmt(r[0]); }
+
+/* ---------- Text-Rendering ---------- */
+function rich(s){
+  let h=esc(s);
+  h=h.replace(/\[\[([^\]]+)\]\]/g,(m,n)=>phoneBtn(n));
+  h=h.replace(/\b(CAVE|Cave|cave)\b(:?)/g,'<mark class="w">$1$2</mark>');
+  h=h.replace(/(KI:)/g,'<mark class="w">$1</mark>');
+  return h;
+}
+function richNotes(s){ // Notizen im Telefonbuch: Nummern antippbar
+  return esc(s).replace(/\b(81-\d{4}|\d{5})\b/g,(m)=>phoneBtn(m));
+}
+function phoneBtn(v,label){
+  const ext=/^(0|\+)/.test(v.trim()); const pg=/^81-\d{4}$/.test(v.trim()); if(pg&&label==="Pager")label="";
+  return '<button class="ph'+(pg?' pg':'')+'" type="button" data-copy="'+esc(v)+'" aria-label="'+(pg?'Pager ':'')+esc(v)+' kopieren">'+(pg?'<span class="pgl">Pager</span> ':'')+esc(v)+(label?' <small>'+esc(label)+'</small>':"")+'</button>'+
+    (ext?'<a class="callx" href="tel:'+esc(v.replace(/[^\d+]/g,""))+'" aria-label="anrufen">☎</a>':"");
+}
+function renderBlocks(blocks,ctx){
+  return blocks.map(b=>{
+    if(b.h!=null) return '<h3'+(b.hw?' class="w"':'')+'>'+rich(b.h)+'</h3>';
+    if(b.p!=null) return '<p>'+rich(b.p)+'</p>';
+    if(b.ul) return renderList(b.ul,"ul");
+    if(b.ol) return renderList(b.ol,"ol");
+    if(b.dl) return '<dl class="ddl">'+b.dl.map(r=>'<dt>'+rich(r[0])+'</dt><dd>'+rich(r[1])+'</dd>').join("")+'</dl>';
+    if(b.tbl) return '<div class="tbl"><table><thead><tr>'+b.tbl[0].map(c=>'<th scope="col">'+esc(c)+'</th>').join("")+'</tr></thead><tbody>'+
+      b.tbl.slice(1).map(r=>'<tr>'+r.map((c,i)=>i?'<td>'+rich(c)+'</td>':'<th scope="row">'+esc(c)+'</th>').join("")+'</tr>').join("")+'</tbody></table></div>';
+    if(b.link) return '<a class="xref" href="'+esc(b.link[1])+'" target="_blank" rel="noopener">↗ '+esc(b.link[0])+'</a>';
+    if(b.xref) return '<a class="xref" href="#'+(b.xref[0]==="sop"?"s-":"n-")+b.xref[1]+'">→ '+esc(b.xref[2])+'</a>';
+    if(b.tool) return toolHTML(b.tool);
+    return "";
+  }).join("");
+}
+function renderList(items,tag){
+  return '<'+tag+'>'+items.map(it=>Array.isArray(it)?'<li>'+rich(it[0])+renderList(it[1],"ul")+'</li>':'<li>'+rich(it)+'</li>').join("")+'</'+tag+'>';
+}
+
+/* ---------- Werkzeuge ---------- */
+function toolHTML(t){
+  const kg=getKg(); const kgv=kg?fmt(kg,1):"";
+  if(t==="kdef") return '<div class="tool" data-tool="kdef"><div class="in"><label>K⁺ (mmol/L)<input id="t-k" inputmode="decimal" placeholder="3,2"></label><label>KG (kg)<input id="t-kg" data-kg inputmode="decimal" value="'+kgv+'" placeholder="75"></label></div><div class="res" id="t-out">–</div></div>';
+  if(t==="hyperk") return '<div class="tool" data-tool="hyperk"><div class="in"><label>K⁺ (mmol/L)<input id="t-hk" inputmode="decimal" placeholder="6,2"></label><div class="seg" role="group" aria-label="EKG"><button type="button" data-ekg="1" aria-pressed="false">EKG positiv</button><button type="button" data-ekg="0" aria-pressed="false">EKG negativ</button></div></div><ol class="steps" id="t-steps">'+
+    NACHT.hyperkSteps.map(s=>'<li data-n="'+s.n+'"><span class="n">'+s.n+'.</span><span>'+rich(s.t)+'</span></li>').join("")+'</ol></div>';
+  if(t==="inhixa") return '<div class="tool" data-tool="inhixa"><div class="in"><label>KG (kg)<input id="t-ikg" data-kg inputmode="decimal" value="'+kgv+'" placeholder="75"></label><div class="res" id="t-iout">–</div></div></div>';
+  return "";
+}
+function wireTools(root){
+  root.querySelectorAll("input[data-kg]").forEach(i=>i.addEventListener("input",()=>{const v=parseNum(i.value);setKg(v>0?v:null);syncKg(i);}));
+  const k=root.querySelector("#t-k");
+  if(k){const upd=()=>{const K=parseNum(k.value),W=parseNum(root.querySelector("#t-kg").value);const o=root.querySelector("#t-out");
+    if(isFinite(K)&&isFinite(W)&&W>0){const d=(4.5-K)*W*0.4;o.innerHTML=fmt(d,0)+' mVal <small>Kaliumdefizit = (4.5 – '+fmt(K,2)+') × '+fmt(W,1)+' × 0.4</small>';}else o.textContent="–";};
+    k.addEventListener("input",upd);root.querySelector("#t-kg").addEventListener("input",upd);upd();}
+  const hk=root.querySelector("#t-hk");
+  if(hk){let ekg=null;const upd=()=>{const K=parseNum(hk.value);root.querySelectorAll("#t-steps li").forEach(li=>{const s=NACHT.hyperkSteps[li.dataset.n-1];let on=false;
+      if(isFinite(K)&&K>=5.5){ if(s.k==="all")on=true; else if(s.hi!=null)on=K>=s.lo&&K<=s.hi&&(s.n!==2||K<6.0)&&(s.n!==3||K>=6.0); else if(K>=s.lo)on=s.ekg==null?true:(ekg===null?true:s.ekg===ekg); }
+      li.classList.toggle("on",on);});};
+    hk.addEventListener("input",upd);
+    root.querySelectorAll("[data-ekg]").forEach(b=>b.addEventListener("click",()=>{const v=+b.dataset.ekg;ekg=ekg===v?null:v;root.querySelectorAll("[data-ekg]").forEach(x=>x.setAttribute("aria-pressed",String(ekg===+x.dataset.ekg)));upd();}));}
+  const ik=root.querySelector("#t-ikg");
+  if(ik){const upd=()=>{const W=parseNum(ik.value);const o=root.querySelector("#t-iout");
+    if(isFinite(W)&&W>0){const mg=Math.min(W,100);o.innerHTML=fmt(mg,1)+' mg 1-0-1 s.c. <small>therapeutisch '+(W>100?'(Maximum 100 mg)':'1 mg/kg')+'</small>';}else o.textContent="–";};
+    ik.addEventListener("input",upd);upd();}
+}
+function syncKg(src){ document.querySelectorAll("[data-kg]").forEach(i=>{if(i!==src){const k=getKg();i.value=k?fmt(k,1):"";i.dispatchEvent(new Event("input-sync"));}}); }
+
+/* ---------- Kopf & Tabs ---------- */
+let route={v:"home"};
+function setSec(s){document.documentElement.style.setProperty("--sec",SEC[s].c);}
+function header(o){
+  const h=$("#top");
+  h.innerHTML='<div class="wrap"><div class="bar">'+
+    (o.back?'<button class="back" type="button" id="backbtn" aria-label="Zurück">‹</button>':'')+
+    (o.logo?'<img class="logo" src="'+LOGO+'" alt="" width="40" height="40">':'')+'<div class="ttl"><b>'+(o.logo?'':'<span class="dot"></span>')+esc(o.t)+'</b>'+(o.sub?'<small>'+esc(o.sub)+'</small>':'')+'</div>'+
+    (o.kg?'<label class="kg" title="Körpergewicht"><input id="hkg" data-kg inputmode="decimal" placeholder="KG" value="'+(getKg()?fmt(getKg(),1):"")+'" aria-label="Körpergewicht in kg"><span>kg</span></label>':'')+
+    (o.theme?'<button class="themebtn" type="button" id="themebtn" aria-label="Hell/Dunkel"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>':'')+
+    '</div>'+(o.search?'<label class="search">'+SEARCH_SVG+'<input id="q" type="search" placeholder="'+esc(o.search)+'" autocomplete="off" value="'+esc(o.q||"")+'"></label>':'')+
+    (o.chips||"")+'</div>';
+  const b=$("#backbtn"); if(b)b.addEventListener("click",()=>{ if(history.length>1&&document.referrer!==undefined&&navStack>0){navStack--;history.back();} else location.hash=o.back; });
+  const t=$("#themebtn"); if(t)t.addEventListener("click",()=>{const cur=document.documentElement.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");const n=cur==="dark"?"light":"dark";document.documentElement.dataset.theme=n;store.set("theme",n);});
+  const kg=$("#hkg"); if(kg)kg.addEventListener("input",()=>{const v=parseNum(kg.value);setKg(v>0?v:null);if(o.onKg)o.onKg();syncKg(kg);});
+}
+function tabs(active){
+  $("#tabs").innerHTML=["home","perf","nacht","tel","sop"].map(k=>'<a href="#'+(k==="home"?"start":k==="perf"?"perfusor":k)+'" style="--sec:'+SEC[k].c+'"'+(k===active?' aria-current="page"':'')+'>'+ICON[k]+'<span>'+SEC[k].t+'</span></a>').join("");
+}
+let navStack=0;
+
+/* ---------- Ansichten ---------- */
+const V=$("#view");
+function show(html){V.innerHTML=html;window.scrollTo(0,0);}
+
+// Start
+function viewHome(){
+  setSec("home");tabs("home");
+  header({t:"KardioGo",logo:1,sub:"AKH Wien · Kardiologie",search:"Alles durchsuchen: Medikament, Thema, Nummer …",theme:1});
+  const favs=favEntries();
+  const tiles=[
+    ["perf","#perfusor","Perfusor",PERF.drugs.length+" Medikamente · ml/h-Rechner"],
+    ["nacht","#nacht","Nachtdienst",Object.keys(NACHT.topics).length+" Situationen · Rechner"],
+    ["tel","#tel","Telefon & Pager",PHONES.entries.length+" Nummern"],
+    ["sop","#sop","SOPs",SOP.items.length+" SOPs · "+SOP.forms.length+" Formulare"]];
+  show('<div class="tiles">'+tiles.map(t=>'<a class="tile" href="'+t[1]+'" style="--sec:'+SEC[t[0]].c+'">'+ICON[t[0]]+'<b>'+t[2]+'</b><small>'+t[3]+'</small></a>').join("")+'</div>'+
+    '<div id="res"></div>'+
+    (favs.length?'<h2 class="sec">Favoriten</h2><div class="list">'+favs.map(e=>telRow(e,true)).join("")+'</div>':''));
+  const q=$("#q"); q.addEventListener("input",()=>globalSearch(q.value));
+  wireTel(V);
+}
+let GIDX=null;
+function buildIndex(){
+  const ix=[];
+  PERF.drugs.forEach(d=>ix.push({k:"perf",t:d.n+(d.sub?" ("+d.sub+")":""),s:d.std.replace(/\n/g," / "),h:"#p-"+d.id,x:norm([d.n,d.sub,d.std,d.k,d.dose].join(" "))}));
+  Object.entries(NACHT.topics).forEach(([id,tp])=>ix.push({k:"nacht",t:tp.t,s:"Nachtdiensthilfe",h:"#n-"+id,x:norm(tp.t+" "+JSON.stringify(tp.blocks)+" "+JSON.stringify(tp.tabs||""))}));
+  SOP.items.forEach(s=>ix.push({k:"sop",t:s.t,s:"SOP · "+s.stand,h:"#s-"+s.id,x:norm(s.t+" "+JSON.stringify(s.tabs))}));
+  SOP.forms.forEach(f=>ix.push({k:"sop",t:f.t,s:"Formular",h:"#f-"+f.id,x:norm(f.t+" "+f.info.join(" "))}));
+  PHONES.entries.forEach((e,i)=>ix.push({k:"tel",t:e.n,s:e.s,h:null,e:i,x:norm(e.c+" "+e.s+" "+e.n+" "+(e.a||"")+" "+e.note+" "+e.nums.map(n=>n.v.replace(/[\s-]/g,"")+" "+n.v+" "+(n.l||"")).join(" "))}));
+  return ix;
+}
+function globalSearch(q){
+  const r=$("#res"); const terms=norm(q).split(/\s+/).filter(Boolean);
+  if(!terms.length){r.innerHTML="";return;}
+  GIDX=GIDX||buildIndex();
+  const hits=GIDX.filter(i=>terms.every(t=>i.x.includes(t)||norm(i.t).includes(t)));
+  hits.sort((a,b)=>score(b,terms)-score(a,terms));
+  const top=hits.slice(0,40);
+  r.innerHTML=top.length?'<div class="list">'+top.map(i=>i.k==="tel"?telRow(PHONES.entries[i.e],true):'<a class="row" href="'+i.h+'" style="--sec:'+SEC[i.k].c+'"><span class="tag">'+SEC[i.k].t+'</span><div class="main"><b>'+esc(i.t)+'</b><div class="sub">'+esc(i.s)+'</div></div><span class="chev">›</span></a>').join("")+'</div>':'<div class="list"><div class="empty">Keine Treffer.</div></div>';
+  wireTel(r);
+}
+function score(i,terms){const t=norm(i.t);let s=0;terms.forEach(x=>{if(t.startsWith(x))s+=3;else if(t.includes(x))s+=2;});return s;}
+
+// Perfusor
+let perfFilter="all", perfQ="";
+function viewPerfList(){
+  setSec("perf");tabs("perf");
+  const chips='<div class="chips" role="group" aria-label="Filter"><a class="chip calcchip" href="#rechner">⌗ Rechner</a>'+[["all","Alle"]].concat(PERF.groups).map(g=>'<button class="chip" type="button" data-g="'+g[0]+'" aria-pressed="'+(perfFilter===g[0])+'">'+esc(g[1])+'</button>').join("")+'</div>';
+  header({t:"Perfusor",sub:PERF.meta.title+" · "+PERF.meta.version,search:"Medikament suchen …",q:perfQ,kg:1,chips,onKg:drawPerf});
+  show('<div class="list" id="plist"></div>');
+  $("#q").addEventListener("input",e=>{perfQ=e.target.value;drawPerf();});
+  document.querySelectorAll(".chip[data-g]").forEach(c=>c.addEventListener("click",()=>{perfFilter=c.dataset.g;document.querySelectorAll(".chip[data-g]").forEach(x=>x.setAttribute("aria-pressed",String(x===c)));drawPerf();}));
+  drawPerf();
+}
+function drawPerf(){
+  const el=$("#plist"); if(!el)return; const kg=getKg(); const terms=norm(perfQ).split(/\s+/).filter(Boolean);
+  const list=PERF.drugs.filter(d=>(terms.length||perfFilter==="all"||d.g.includes(perfFilter))&&terms.every(t=>norm(d.n+" "+d.sub+" "+d.std+" "+d.k+" "+((typeof PERF_INFO!=="undefined"&&PERF_INFO[d.id])||"")).includes(t)))
+    .sort((a,b)=>a.n.localeCompare(b.n,"de"));
+  el.innerHTML=list.length?list.map(d=>{const c=calcOf(d);let rt="";
+    if(c&&c.s){const r=rateRange(c,c.s,kg); rt=r?r+" ml/h":(c.w?'<span style="color:var(--muted)">kg?</span>':"");}
+    return '<a class="row" href="#p-'+d.id+'"><div class="main"><b>'+esc(d.n)+'</b>'+(d.sub?' <span class="sub" style="display:inline">'+esc(d.sub)+'</span>':'')+'<div class="sub">'+esc(d.std.replace(/\n/g," / "))+(d.u?' · '+esc(d.u):'')+'</div></div><span class="rt">'+rt+'</span><span class="chev">›</span></a>';}).join(""):'<div class="empty">Kein Medikament gefunden.</div>';
+}
+function viewPerfDetail(id){
+  const d=PERF.drugs.find(x=>x.id===id); if(!d)return viewPerfList();
+  setSec("perf");tabs("perf");
+  header({t:d.n+(d.sub?" ("+d.sub+")":""),sub:d.src?"Perfusor":"Perfusor 13H3",back:"perfusor",kg:!!(d.calc&&d.calc.w)||!!d.bolus,onKg:()=>drawDetail(d)});
+  show('<div id="pd"></div>');
+  drawDetail(d);
+}
+const CALC_MEM={};
+const isG=u=>/^[µμ]g\/kg\/min$/.test(u);
+const dU=(d,v)=>fmt(v,3)+(isG(d.u)?" γ":" "+d.u);
+function ladder(c){ // Start + n × Schritt (bis Max, sonst 3 Schritte); max. 8 Werte
+  if(c.dbl&&c.s){const o=[];for(let v=c.s[0];v<=c.mx+1e-9;v*=2)o.push(v);return o;}
+  if(!c.s||!c.st)return [];
+  const out=[]; const lim=c.mx!=null?c.mx:c.s[0]+3*c.st;
+  for(let v=c.s[0],i=0;v<=lim+1e-9&&i<60;i++,v=Math.round((v+c.st)*1e6)/1e6)out.push(v);
+  if(c.mx!=null&&Math.abs(out[out.length-1]-c.mx)>1e-9)out.push(c.mx);
+  if(out.length>8)return out.slice(0,7).concat([null,out[out.length-1]]);
+  return out;
+}
+function drawDetail(d){
+  const kg=getKg(); const c=calcOf(d); const el=$("#pd"); if(!el)return;
+  const info=(typeof PERF_INFO!=="undefined")&&PERF_INFO[d.id];
+  let h='<div class="card">'+(d.src?'<div class="srcnote">'+esc(d.src)+' · nicht im 13H3-Standard</div>':'')+'<div class="std">'+esc(d.std||"—")+'</div>';
+  if(c){ if(c.co) h+='<div class="seg" role="group" aria-label="Konzentration">'+c.co.map((o,i)=>'<button type="button" data-co="'+i+'" aria-pressed="'+(o[1]===c.cc)+'">'+esc(o[0])+'</button>').join("")+'</div>';
+    h+='<div class="conc">= '+fmt(c.cc,4)+' '+esc(c.cu)+'</div>'; }
+  if(d.k) h+='<div class="kom13">'+rich(d.k)+'</div>';
+  if(info) h+='<div class="info"><span class="tag">Info</span>'+rich(info)+'</div>';
+  h+='</div>';
+  const R=v=>c?rateRange(c,Array.isArray(v)?v:[v],kg):"";
+  const mlh=s=>s?'<b class="ml">'+esc(s)+'<small> ml/h</small></b>':(c&&c.w&&!kg?'<b class="ml mute">kg?</b>':'');
+  // Referenzzeilen: Text aus dem Standard klein, ml/h groß
+  const rows=[];
+  if(d.dose!=null) rows.push({l:"Dosis",t:d.dose,u:d.u});
+  if(d.dose==null&&d.start) rows.push({l:"Start",t:d.start,u:d.u,r:c&&c.s?R(c.s):"",q:c&&c.s?c.s[0]:null});
+  if(d.dose!=null&&c&&c.s) rows.push({l:c.sl||"Start",t:c.s.map(x=>fmt(x,3)).join("–"),u:d.u,r:R(c.s),q:c.s[0]});
+  if(c&&c.st) rows.push({l:"Schritt",t:"+"+(d.step&&d.dose==null?d.step:fmt(c.st,3)),u:d.u,r:"+"+R(c.st)});
+  else if(d.step) rows.push({l:"Steigerung",t:d.step,u:d.u});
+  if(c&&c.lv) c.lv.forEach(x=>rows.push({l:x[0],t:fmt(x[1],3),u:d.u,r:R(x[1]),q:x[1]}));
+  if(d.max) rows.push({l:"Max.",t:d.max,u:d.u,r:c&&c.mx!=null?R(c.mx):"",q:c&&c.mx!=null?c.mx:null,w:1});
+  const unitTxt=u=>u?(isG(u)?" γ":" "+u):"";
+  const rowsH='<div class="refs">'+rows.map(r=>'<'+(r.q!=null?'button type="button" data-q="'+r.q+'"':'div')+' class="ref'+(r.w?' mx':'')+'"><span class="rl">'+esc(r.l)+'</span><span class="rt2">'+rich(r.t)+(r.l!=="Dosis"&&/[\d)]$/.test(r.t.trim())?esc(unitTxt(r.u)):'')+'</span>'+mlh(r.r)+'</'+(r.q!=null?'button':'div')+'>').join("")+'</div>';
+  if(c){
+    const lad=ladder(c);
+    h+='<div class="card rate"><label class="dlab" for="cd">Dosis <span>'+(isG(d.u)?'γ = µg/kg/min':esc(d.u))+'</span></label><div class="drow">'+
+      (c.st?'<button type="button" class="stepb" data-step="-1" aria-label="einen Schritt runter">−</button>':'')+
+      '<input id="cd" inputmode="decimal" autocomplete="off">'+
+      (c.st?'<button type="button" class="stepb" data-step="1" aria-label="einen Schritt rauf">+</button>':'')+'</div>'+
+      '<div class="big" id="cbig" aria-live="polite"></div><div id="cmsg"></div>'+rowsH+
+      (lad.length?'<div class="dlab">Titration</div><div class="lad">'+lad.map(v=>v==null?'<span class="dots">…</span>':'<button type="button" data-q="'+v+'"><b>'+(R(v)||'kg?')+'</b><small>'+esc(dU(d,v))+'</small></button>').join("")+'</div>':'')+
+      '<details class="rev"><summary>Umgekehrt: ml/h → Dosis</summary><div class="revrow"><input id="cr" inputmode="decimal" autocomplete="off" aria-label="ml/h"><span>ml/h =</span><b id="crd">–</b></div></details></div>';
+  } else {
+    h+='<div class="card">'+rowsH+'</div>';
+  }
+  if(d.bolus){ h+='<div class="card"><div class="dlab">Initialdosis 90 µg/kg</div><div class="big"><span class="v" style="font-size:34px">'+(kg?fmt(d.bolus.perKg*kg/1000,2):'–')+'</span><span class="mlh">mg</span></div>'+(kg?'<div class="formula">90 µg × '+fmt(kg,1)+' kg = '+fmt(d.bolus.perKg*kg,0)+' µg</div>':'<div class="need">Gewicht oben eingeben.</div>')+'</div>'; }
+  el.innerHTML=h;
+  el.querySelectorAll("[data-co]").forEach(b=>b.addEventListener("click",()=>{store.set("conc."+d.id,+b.dataset.co);drawDetail(d);}));
+  if(c){ const cd=$("#cd"),cr=$("#cr"),big=$("#cbig"),msg=$("#cmsg"),crd=$("#crd");
+    const upd=()=>{
+      const kg=getKg(); const dose=parseNum(cd.value); let m="";
+      CALC_MEM[d.id]=cd.value;
+      el.querySelectorAll("[data-q]").forEach(b=>b.setAttribute("aria-pressed",String(isFinite(dose)&&Math.abs(+b.dataset.q-dose)<1e-9)));
+      if(c.w&&!kg){ big.innerHTML='<span class="mute">Gewicht oben eingeben</span>'; document.querySelector("#top .kg")?.classList.add("ask"); }
+      else if(!(dose>=0)){ big.innerHTML='<span class="mute">Dosis eingeben</span>'; }
+      else { document.querySelector("#top .kg")?.classList.remove("ask");
+        const rate=toRate(c,dose,kg);
+        big.innerHTML='<span class="v">'+fmt(rate)+'</span><span class="mlh">ml/h</span><span class="bd">'+esc(dU(d,dose))+'</span>';
+        m+='<div class="formula">'+fmt(dose,3)+' '+esc(d.u)+(c.w?' × '+fmt(kg,1)+' kg':'')+(c.m===60?' × 60':'')+' ÷ '+fmt(c.cc,4)+' '+esc(c.cu)+'</div>';
+        if(c.mx!=null&&dose>c.mx+1e-9) m+='<div class="warnbox"><b>Über Max.-Dosis</b> laut Standard: '+esc(dU(d,c.mx))+' = '+rateRange(c,[c.mx],kg)+' ml/h</div>';
+      }
+      if(c.w&&kg&&(kg<30||kg>250)) m+='<div class="warnbox"><b>Gewicht prüfen:</b> '+fmt(kg,1)+' kg</div>';
+      msg.innerHTML=m;
+      const r=parseNum(cr.value); const x=r>=0?toDose(c,r,kg):NaN; crd.textContent=isFinite(x)?dU(d,x):"–";
+    };
+    cd.addEventListener("input",upd); cr.addEventListener("input",upd);
+    el.querySelectorAll("[data-q]").forEach(b=>b.addEventListener("click",()=>{cd.value=fmt(+b.dataset.q,3);upd();}));
+    el.querySelectorAll("[data-step]").forEach(b=>b.addEventListener("click",()=>{const v=parseNum(cd.value);const n=Math.max(0,Math.round(((isFinite(v)?v:0)+(+b.dataset.step)*c.st)*1e6)/1e6);cd.value=fmt(n,3);upd();}));
+    cd.value=CALC_MEM[d.id]!=null?CALC_MEM[d.id]:(c.s?fmt(c.s[0],3):""); upd(); }
+}
+
+// Freier Perfusor-Rechner (beliebige Substanz)
+const AMT_U={"g":["m",1e9],"mg":["m",1e6],"µg":["m",1e3],"ng":["m",1],"IE":["ie",1],"mmol":["mol",1]};
+const DOSE_U=[["µg/kg/min","µg",1,60],["µg/kg/h","µg",1,1],["mg/kg/h","mg",1,1],["mg/kg/min","mg",1,60],["ng/kg/min","ng",1,60],
+  ["mg/h","mg",0,1],["µg/h","µg",0,1],["µg/min","µg",0,60],["mg/min","mg",0,60],["g/h","g",0,1],
+  ["IE/h","IE",0,1],["IE/kg/h","IE",1,1],["mmol/h","mmol",0,1],["ml/h","ml",0,1]];
+function viewCalc(){
+  setSec("perf");tabs("perf");
+  const st=store.get("calc",{a:"",au:"mg",v:"50",du:"µg/kg/min",d:""});
+  header({t:"Perfusor-Rechner",sub:"für jede Substanz",back:"perfusor",kg:1,onKg:()=>upd()});
+  const opt=(arr,sel)=>arr.map(x=>'<option'+(x===sel?' selected':'')+'>'+x+'</option>').join("");
+  show('<div class="card rate">'+
+    '<div class="dlab">Spritze</div><div class="crow"><input id="ga" inputmode="decimal" placeholder="Menge" value="'+esc(st.a)+'" aria-label="Wirkstoffmenge"><select id="gau" aria-label="Einheit">'+opt(Object.keys(AMT_U),st.au)+'</select><span class="in">in</span><input id="gv" inputmode="decimal" value="'+esc(st.v)+'" aria-label="Volumen ml"><span class="in">ml</span></div>'+
+    '<div class="conc" id="gc"></div>'+
+    '<div class="dlab">Dosis</div><div class="crow"><input id="gd" inputmode="decimal" placeholder="Dosis" value="'+esc(st.d)+'" aria-label="Dosis"><select id="gdu" aria-label="Dosiseinheit">'+opt(DOSE_U.map(x=>x[0]).filter(x=>x!=="ml/h"),st.du)+'</select></div>'+
+    '<div class="big" id="gbig" aria-live="polite"></div><div id="gmsg"></div>'+
+    '<details class="rev"><summary>Umgekehrt: ml/h → Dosis</summary><div class="revrow"><input id="gr" inputmode="decimal" aria-label="ml/h"><span>ml/h =</span><b id="grd">–</b></div></details>'+
+    '</div><p class="hint">Nur Rechenhilfe – Konzentration und Dosis selbst prüfen.</p>');
+  const $a=$("#ga"),$au=$("#gau"),$v=$("#gv"),$d=$("#gd"),$du=$("#gdu"),$r=$("#gr");
+  [$a,$au,$v,$d,$du,$r].forEach(x=>x.addEventListener("input",upd));
+  function upd(){
+    const s={a:$a.value,au:$au.value,v:$v.value,du:$du.value,d:$d.value}; store.set("calc",s);
+    const a=parseNum(s.a),v=parseNum(s.v),d=parseNum(s.d),kg=getKg();
+    const A=AMT_U[s.au]; const U=DOSE_U.find(x=>x[0]===s.du); const DU=AMT_U[U[1]];
+    const big=$("#gbig"),msg=$("#gmsg"),gc=$("#gc"),grd=$("#grd"); let m="";
+    if(!(a>0&&v>0)){gc.textContent="";big.innerHTML='<span class="mute">Menge und Volumen eingeben</span>';msg.innerHTML="";grd.textContent="–";return;}
+    gc.textContent="= "+fmt(a/v,4)+" "+s.au+"/ml";
+    if(A[0]!==DU[0]){big.innerHTML='<span class="mute">Einheiten passen nicht ('+esc(s.au)+' ↔ '+esc(s.du)+')</span>';msg.innerHTML="";grd.textContent="–";return;}
+    const cc=a*A[1]/v/DU[1]; // Konzentration in Dosis-Einheit pro ml
+    const c={cc:cc,w:U[2],m:U[3]};
+    if(c.w&&!kg){big.innerHTML='<span class="mute">Gewicht oben eingeben</span>';document.querySelector("#top .kg")?.classList.add("ask");}
+    else if(!(d>=0)){big.innerHTML='<span class="mute">Dosis eingeben</span>';}
+    else{document.querySelector("#top .kg")?.classList.remove("ask");
+      const r=toRate(c,d,kg);
+      big.innerHTML='<span class="v">'+fmt(r)+'</span><span class="mlh">ml/h</span><span class="bd">'+fmt(d,3)+' '+esc(s.du)+'</span>';
+      m+='<div class="formula">'+fmt(d,3)+' '+esc(s.du)+(c.w?' × '+fmt(kg,1)+' kg':'')+(c.m===60?' × 60':'')+' ÷ '+fmt(cc,4)+' '+esc(U[1])+'/ml</div>';
+      if(r>0) m+='<div class="formula">Spritze ('+fmt(v,1)+' ml) reicht ca. <b>'+fmt(v/r,1)+' h</b> · Tagesmenge '+fmt(d*(c.w?kg:1)*c.m*24,2)+' '+esc(U[1])+'</div>';
+    }
+    if(c.w&&kg&&(kg<30||kg>250)) m+='<div class="warnbox"><b>Gewicht prüfen:</b> '+fmt(kg,1)+' kg</div>';
+    msg.innerHTML=m;
+    const rr=parseNum($r.value); const x=rr>=0?toDose(c,rr,kg):NaN; grd.textContent=isFinite(x)?fmt(x,3)+" "+s.du:"–";
+  }
+  upd();
+}
+
+// Nachtdienst
+function viewNachtList(){
+  setSec("nacht");tabs("nacht");
+  header({t:"Nachtdienst",sub:NACHT.meta.title+" "+NACHT.meta.version,search:"Thema suchen …"});
+  const grp=NACHT.groups.map(g=>'<h2 class="sec">'+esc(g.t)+'</h2><div class="list">'+g.topics.map(id=>{const tp=NACHT.topics[id];return '<a class="row" href="#n-'+id+'"><div class="main"><b>'+esc(tp.t)+'</b></div><span class="chev">›</span></a>';}).join("")+'</div>').join("");
+  const apo='';
+  show('<div id="nl">'+grp+'</div>');
+  $("#q").addEventListener("input",e=>{const terms=norm(e.target.value).split(/\s+/).filter(Boolean);const nl=$("#nl");
+    if(!terms.length){nl.innerHTML=grp+apo;return;}
+    const hits=Object.entries(NACHT.topics).filter(([id,tp])=>terms.every(t=>norm(tp.t+" "+JSON.stringify(tp.blocks)+JSON.stringify(tp.tabs||"")).includes(t)));
+    nl.innerHTML='<div class="list">'+(hits.length?hits.map(([id,tp])=>'<a class="row" href="#n-'+id+'"><div class="main"><b>'+esc(tp.t)+'</b></div><span class="chev">›</span></a>').join(""):'<div class="empty">Kein Thema gefunden.</div>')+'</div>';});
+}
+function viewNachtTopic(id){
+  const tp=NACHT.topics[id]; if(!tp)return viewNachtList();
+  setSec("nacht");tabs("nacht");
+  header({t:tp.t,sub:"Nachtdiensthilfe",back:"nacht"});
+  let h='<div class="card doc">'+renderBlocks(tp.blocks)+'</div>';
+  if(tp.tabs){ h+='<div class="ttabs" role="tablist">'+tp.tabs.map((t,i)=>'<button type="button" role="tab" data-tab="'+i+'" class="'+(t.w?"w":"")+'" aria-pressed="'+(i===0)+'">'+esc(t.t)+'</button>').join("")+'</div><div class="card doc" id="tabc">'+renderBlocks(tp.tabs[0].blocks)+'</div>'; }
+  show(h); wireTools(V); wireTel(V);
+  V.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{V.querySelectorAll("[data-tab]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));const c=$("#tabc");c.innerHTML=renderBlocks(tp.tabs[+b.dataset.tab].blocks);wireTel(c);}));
+}
+
+// Telefon
+const CAT_ORDER=["Kardiologie","Konsile & Dienste","Intensiv & Notfall","Radiologie & Nuklear","Labor & Blut","Hämato & Onko","Innere Medizin","Chirurgie & OP","Neuro & Psych","Weitere Fächer","Stationen AKH","Verwaltung & Sonstiges"];
+const SUB_ORDER={"Kardiologie":["Dienste & Pager","Herzkatheter","Stationen","Ambulanzen","Ärzt:innen","Forschung","Sekretariat & Leitung"]};
+let telQ="", telCat=store.get("telcat","Kardiologie"), telSub="";
+function favSet(){return new Set(store.get("favs2",[]))}
+function favKey(e){return e.c+"|"+e.s+"|"+e.n}
+function favEntries(){const f=favSet();return PHONES.entries.filter(e=>f.has(favKey(e)));}
+function telRow(e,ctx){
+  const fav=favSet().has(favKey(e));
+  return '<div class="trow"><button class="star" type="button" data-fav="'+esc(favKey(e))+'" aria-pressed="'+fav+'" aria-label="Favorit">★</button><div class="main"><b>'+esc(e.n)+'</b>'+(ctx?' <span class="note">· '+esc(e.s)+'</span>':'')+
+    (e.a?'<div class="note">auch: '+esc(e.a)+'</div>':'')+(e.note?'<div class="note">'+richNotes(e.note)+'</div>':'')+(e.nums.length?'<div class="nums">'+e.nums.map(n=>phoneBtn(n.v,n.l)).join("")+'</div>':'')+'</div></div>';
+}
+function subsOf(c){const s=[...new Set(PHONES.entries.filter(e=>e.c===c).map(e=>e.s))];const o=SUB_ORDER[c]||[];return s.sort((x,y)=>{const i=o.indexOf(x),j=o.indexOf(y);return (i<0?99:i)-(j<0?99:j)||x.localeCompare(y,"de");});}
+function viewTel(){
+  setSec("tel");tabs("tel");
+  const cats=CAT_ORDER.filter(c=>PHONES.entries.some(e=>e.c===c));
+  if(telCat!=="★"&&!cats.includes(telCat))telCat=cats[0];
+  const chips='<div class="chips" role="group" aria-label="Kategorie"><button class="chip" type="button" data-c="★" aria-pressed="'+(telCat==="★")+'">★</button>'+cats.map(c=>'<button class="chip" type="button" data-c="'+esc(c)+'" aria-pressed="'+(telCat===c)+'">'+esc(c)+'</button>').join("")+'</div>';
+  header({t:"Telefon & Pager",sub:"Suche durchsucht alle Kategorien",search:"Name, Stelle oder Nummer …",q:telQ,chips});
+  show('<div class="chips sub" id="subs" role="group" aria-label="Unterkategorie"></div><div id="tl"></div><p class="hint">Nummer antippen = kopieren</p>');
+  $("#q").addEventListener("input",e=>{telQ=e.target.value;drawTel();});
+  document.querySelectorAll(".chip[data-c]").forEach(c=>c.addEventListener("click",()=>{telCat=c.dataset.c;telSub="";store.set("telcat",telCat);telQ="";const q=$("#q");if(q)q.value="";document.querySelectorAll(".chip[data-c]").forEach(x=>x.setAttribute("aria-pressed",String(x===c)));drawTel();}));
+  drawTel();
+}
+function drawTel(){
+  const el=$("#tl"),sb=$("#subs"); if(!el)return; const terms=norm(telQ).split(/\s+/).filter(Boolean); const f=favSet();
+  const hay=e=>norm(e.c+" "+e.s+" "+e.n+" "+(e.a||"")+" "+e.note+" "+e.nums.map(n=>n.v.replace(/[\s-]/g,"")+" "+n.v+" "+(n.l||"")).join(" "));
+  let list, grp;
+  if(terms.length){ // Suche: immer über alle Kategorien
+    sb.hidden=true;
+    list=PHONES.entries.filter(e=>terms.every(t=>hay(e).includes(t)));
+    grp=e=>e.c+" · "+e.s;
+  } else if(telCat==="★"){
+    sb.hidden=true; list=PHONES.entries.filter(e=>f.has(favKey(e))); grp=e=>e.c;
+  } else {
+    const subs=subsOf(telCat);
+    if(telSub&&!subs.includes(telSub))telSub="";
+    sb.hidden=subs.length<2;
+    sb.innerHTML='<button class="chip" type="button" data-s="" aria-pressed="'+(telSub==="")+'">Alle</button>'+subs.map(s=>'<button class="chip" type="button" data-s="'+esc(s)+'" aria-pressed="'+(telSub===s)+'">'+esc(s)+'</button>').join("");
+    sb.querySelectorAll("[data-s]").forEach(b=>b.addEventListener("click",()=>{telSub=b.dataset.s;drawTel();}));
+    list=PHONES.entries.filter(e=>e.c===telCat&&(!telSub||e.s===telSub)); grp=e=>e.s;
+  }
+  if(!list.length){el.innerHTML='<div class="list"><div class="empty">'+(telCat==="★"&&!terms.length?"Noch keine Favoriten. Stern antippen zum Merken.":"Keine Nummer gefunden.")+'</div></div>';return;}
+  const by=new Map(); list.forEach(e=>{const k=grp(e);if(!by.has(k))by.set(k,[]);by.get(k).push(e);});
+  const keys=[...by.keys()]; if(!terms.length&&telCat!=="★"){const o=subsOf(telCat);keys.sort((a,b)=>o.indexOf(a)-o.indexOf(b));}
+  el.innerHTML='<div class="list">'+keys.map(k=>'<div class="dhead">'+esc(k)+'</div>'+by.get(k).sort((a,b)=>a.n.localeCompare(b.n,"de")).map(e=>telRow(e,false)).join("")).join("")+'</div>';
+  wireTel(el);
+}
+function wireTel(root){
+  root.querySelectorAll("[data-fav]").forEach(b=>b.onclick=()=>{const f=favSet();const k=b.dataset.fav;f.has(k)?f.delete(k):f.add(k);store.set("favs",[...f]);b.setAttribute("aria-pressed",String(f.has(k)));toast(f.has(k)?"Als Favorit gemerkt":"Favorit entfernt");});
+}
+
+// SOPs
+function viewSopList(){
+  setSec("sop");tabs("sop");
+  header({t:"SOPs",sub:"Kardiologie · Arbeitsanweisungen · Formulare",search:"SOP suchen …"});
+  const draw=(q)=>{const terms=norm(q).split(/\s+/).filter(Boolean);const m=s=>terms.every(t=>norm(JSON.stringify(s)).includes(t));
+    const it=SOP.items.filter(m), fo=SOP.forms.filter(m);
+    return (it.length?'<div class="list">'+it.map(s=>'<a class="row" href="#s-'+s.id+'"><div class="main"><b>'+esc(s.t)+'</b><div class="sub">'+esc(s.tabs.map(t=>t.t).join(" · "))+'</div></div><span class="chev">›</span></a>').join("")+'</div>':'')+
+      (fo.length?'<h2 class="sec">Formulare & Zuweisungen</h2><div class="list">'+fo.map(f=>'<a class="row" href="#f-'+f.id+'"><div class="main"><b>'+esc(f.t)+'</b></div><span class="chev">›</span></a>').join("")+'</div>':'')+
+      (!it.length&&!fo.length?'<div class="list"><div class="empty">Nichts gefunden.</div></div>':'');};
+  show('<div id="sl">'+draw("")+'</div>');
+  $("#q").addEventListener("input",e=>{$("#sl").innerHTML=draw(e.target.value);});
+}
+function viewSop(id){
+  const s=SOP.items.find(x=>x.id===id); if(!s)return viewSopList();
+  setSec("sop");tabs("sop");
+  header({t:s.t,sub:s.stand,back:"sop"});
+  const start=Math.min(store.get("soptab."+id,0),s.tabs.length-1);
+  show('<div class="ttabs" role="tablist">'+s.tabs.map((t,i)=>'<button type="button" role="tab" data-tab="'+i+'" aria-pressed="'+(i===start)+'">'+esc(t.t)+'</button>').join("")+'</div><div class="card doc" id="tabc">'+renderBlocks(s.tabs[start].blocks)+'</div>'+'');
+  wireTools(V);wireTel(V);
+  V.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{V.querySelectorAll("[data-tab]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));store.set("soptab."+id,+b.dataset.tab);const c=$("#tabc");c.innerHTML=renderBlocks(s.tabs[+b.dataset.tab].blocks);wireTools(c);wireTel(c);}));
+}
+function viewForm(id){
+  const f=SOP.forms.find(x=>x.id===id); if(!f)return viewSopList();
+  setSec("sop");tabs("sop");
+  header({t:f.t,sub:"Formular",back:"sop"});
+  show('<div class="card doc"><ul>'+f.info.map(i=>'<li>'+rich(i)+'</li>').join("")+'</ul></div>');
+}
+
+/* ---------- Kopieren ---------- */
+let tt;
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),1400);}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-copy]");if(!b)return;const v=b.dataset.copy;
+  const ok=()=>toast(v+" kopiert");
+  try{navigator.clipboard.writeText(v).then(ok,()=>{fallback(b);});}catch(err){fallback(b);}
+  function fallback(el){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);toast(v);}
+});
+
+/* ---------- Routing (#start, #perfusor, #p-id, #nacht, #n-id, #tel, #sop, #s-id, #f-id) ---------- */
+function go(){
+  const h=decodeURIComponent(location.hash.slice(1));
+  if(h==="perfusor")return viewPerfList();
+  if(h==="rechner")return viewCalc();
+  if(h.startsWith("p-"))return viewPerfDetail(h.slice(2));
+  if(h==="nacht")return viewNachtList();
+  if(h.startsWith("n-"))return viewNachtTopic(h.slice(2));
+  if(h==="tel")return viewTel();
+  if(h==="sop")return viewSopList();
+  if(h.startsWith("s-"))return viewSop(h.slice(2));
+  if(h.startsWith("f-"))return viewForm(h.slice(2));
+  return viewHome();
+}
+document.addEventListener("click",e=>{const a=e.target.closest('a[href^="#"]');if(a)navStack++;});
+window.addEventListener("hashchange",go);
+const th=store.get("theme",null); if(th)document.documentElement.dataset.theme=th;
+try{ if(typeof PERF==="undefined"||typeof PHONES==="undefined") throw 0; go(); }
+catch(e){ V.innerHTML='<div class="card">Daten konnten nicht geladen werden.</div>'; }
+try{ if("serviceWorker" in navigator && location.protocol==="https:" && window.self===window.top && document.querySelector('link[rel="manifest"]')) navigator.serviceWorker.register("sw.js").catch(()=>{}); }catch(e){}
+})();
+</script>
+</body></html>
