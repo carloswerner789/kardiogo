@@ -1362,7 +1362,7 @@ window.addEventListener("hashchange",go);
 const th=store.get("theme",null); if(th)document.documentElement.dataset.theme=th;
 try{ if(typeof PERF==="undefined"||typeof PHONES==="undefined") throw 0; go(); }
 catch(e){ V.innerHTML='<div class="card">Daten konnten nicht geladen werden.</div>'; }
-try{ if("serviceWorker" in navigator && location.protocol==="https:" && window.self===window.top && document.querySelector('link[rel="manifest"]')) navigator.serviceWorker.register("sw.js").catch(()=>{}); }catch(e){}
+try{ if("serviceWorker" in navigator && (location.protocol==="https:"||location.hostname==="localhost") && window.self===window.top && document.querySelector('link[rel="manifest"]')) navigator.serviceWorker.register("sw.js").catch(()=>{}); }catch(e){}
 })();
 </script>
 </body></html>
