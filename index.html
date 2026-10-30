@@ -169,6 +169,7 @@ a.row:active{background:var(--sunk)}
 .pc-src{display:block;padding:7px 10px;font-size:12.5px;font-weight:700;color:var(--sec);text-decoration:none;border-bottom:1px solid var(--line)}
 .rpill{display:inline-block;padding:1px 9px;border-radius:6px}
 .chno{flex:none;min-width:36px;font-weight:700;color:var(--sec);font-variant-numeric:tabular-nums}
+.psec,.sec,h2.sec{scroll-margin-top:calc(var(--hdr,150px) + 8px)}
 .psec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .psec>summary{list-style:none;cursor:pointer;padding:13px 14px;font-weight:600;display:flex;gap:8px;align-items:flex-start}
 .psec>summary::-webkit-details-marker{display:none}
@@ -1097,6 +1098,8 @@ function viewCalc(){
 }
 
 // PANTHER
+function scrollToTop(el,smooth){ if(!el)return; const hd=document.getElementById("top"); const off=(hd?hd.getBoundingClientRect().height:0)+8;
+  const y=el.getBoundingClientRect().top+window.scrollY-off; window.scrollTo({top:Math.max(0,y),behavior:smooth&&!matchMedia("(prefers-reduced-motion: reduce)").matches?"smooth":"auto"}); }
 const PAN_REG=[
   {id:"kopf",l:"Kopf / ZNS",docs:["kap02","kap03"],shape:'<ellipse cx="410" cy="95" rx="95" ry="110"/>'},
   {id:"thorax",l:"Thorax / Lunge",docs:["kap04","kap06","kap07"],shape:'<rect x="285" y="210" width="270" height="175" rx="30"/>'},
@@ -1151,7 +1154,7 @@ function drawPan(){
   const btns='<div class="regbtns">'+PAN_REG.map(r=>'<button type="button" data-reg="'+r.id+'" aria-pressed="'+(panReg===r.id)+'">'+esc(r.l)+'</button>').join("")+'</div>';
   const sel=PAN_REG.find(r=>r.id===panReg);
   el.innerHTML='<div class="bodybox">'+body+btns+'</div>'+(sel?'<h2 class="sec">'+esc(sel.l)+'</h2><div class="cgrid">'+sel.docs.map(id=>PANTHER.documents.find(d=>d.id===id)).filter(Boolean).map(chapCard).join("")+'</div>':'<p class="hint">Region antippen</p>');
-  el.querySelectorAll("[data-reg]").forEach(x=>{const go=()=>{panReg=panReg===x.dataset.reg?null:x.dataset.reg;drawPan();const h=$("#pl h2.sec");if(h&&panReg)h.scrollIntoView({behavior:"smooth",block:"start"});};x.addEventListener("click",go);x.addEventListener("keydown",e=>{if(e.key==="Enter")go();});});
+  el.querySelectorAll("[data-reg]").forEach(x=>{const go=()=>{panReg=panReg===x.dataset.reg?null:x.dataset.reg;drawPan();const h=$("#pl h2.sec");if(h&&panReg)requestAnimationFrame(()=>scrollToTop(h,true));};x.addEventListener("click",go);x.addEventListener("keydown",e=>{if(e.key==="Enter")go();});});
 }
 function viewPanDoc(arg){
   const [id,sid]=arg.split("--"); const d=PANTHER.documents.find(x=>x.id===id); if(!d)return viewPanList();
@@ -1161,7 +1164,8 @@ function viewPanDoc(arg){
   const openId=sid||(th.length===1?th[0].id:(d.sections.length===1?d.sections[0].id:null));
   const sec=s=>'<details class="psec" id="ps-'+s.id+'"'+(s.id===openId?' open':'')+'><summary><span>'+(s.number?'<b class="sno">'+esc(s.number)+'</b> ':'')+esc(s.title)+'</span></summary><div class="doc pdoc">'+s.blocks.map(panBlock).join("")+'</div></details>';
   show((th.length?'<h2 class="sec">Therapie</h2>'+th.map(sec).join(""):'')+(gen.length?'<h2 class="sec">'+(th.length?'Diagnostik & Allgemeines':'Inhalt')+'</h2>'+gen.map(sec).join(""):''));
-  if(sid){const el=document.getElementById("ps-"+sid);if(el)setTimeout(()=>el.scrollIntoView({block:"start"}),30);}
+  if(sid){const el=document.getElementById("ps-"+sid);if(el)requestAnimationFrame(()=>requestAnimationFrame(()=>scrollToTop(el,false)));}
+  V.querySelectorAll("details.psec").forEach(dt=>dt.addEventListener("toggle",()=>{if(dt.open)requestAnimationFrame(()=>scrollToTop(dt,true));}));
 }
 function viewAbx(id){
   const a=panAbx().find(x=>x.id===id); if(!a)return viewPanList();
